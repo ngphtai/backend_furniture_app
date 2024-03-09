@@ -22,9 +22,9 @@ class UserController extends Controller
             //Validated
             $validateUser = Validator::make($request->all(),
             [
-                'avatar' => 'required',
-                'type'  => 'required',
-                'open_id' => 'required',
+                // 'avatar' => 'required',
+                // 'type'  => 'required',
+                // 'open_id' => 'required',
                 'name' => 'required',
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required'
@@ -42,8 +42,8 @@ class UserController extends Controller
 
             $map =[];
 
-            $map['type'] = $validateUser['type'];
-            $map['open_id'] = $validateUser['open_id'];
+            // $map['type'] = $validateUser['type'];
+            // $map['open_id'] = $validateUser['open_id'];
 
             $user = User::where($map)-> first();
 
@@ -113,12 +113,76 @@ class UserController extends Controller
                 ], 401);
             }
 
-            $user = User::where('email', $request->email)->first();
+            $user = User::where('email', $request->email)->first(); // get the user from the database by email
 
             return response()->json([
                 'status' => true,
                 'message' => 'User Logged In Successfully',
                 'token' => $user->createToken("API TOKEN")->plainTextToken
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+    public function login(Request $request)
+    {
+
+
+try {
+            //Validated
+            $validateUser = Validator::make($request->all(),
+            [
+                'avatar'=>'required',
+                'type'=>'required',
+
+                'name' => 'required',
+                'email' => 'required',
+                'open_id' => 'required',
+                "password"=>'required|min:6'
+            ]);
+
+            if($validateUser->fails()){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'errors' => $validateUser->errors()
+                ], 401);
+            }
+
+            $validated = $validateUser->validated();
+            $map = [];
+            $map['type']=$validated['type'];
+            $map['open_id'] = $validated['open_id'];
+            $user = User::where($map)->first();
+
+            if(empty($user->id)){
+                $validated['token'] = md5(uniqid().rand(10000, 99999));
+                $validated['created_at']=Carbon::now();
+               // $validated['password'] = Hash::make($validated);
+                $userID = User::insertGetId($validated);
+                $userInfo = User::where('id', '=', $userID)->first();
+                $accessToken = $userInfo->createToken(uniqid())->plainTextToken;
+                $userInfo->access_token = $accessToken;
+                User::where('id', '=', $userID)->update(['access_token'=>$accessToken]);
+
+                return response()->json([
+                    'code' => 200,
+                    'msg' => 'User Created Successfully',
+                    'data' => $userInfo
+                ], 200);
+
+            }
+            $accessToken = $user->createToken(uniqid())->plainTextToken;
+            $user->access_token = $accessToken;
+            User::where('open_id', '=', $validated['open_id'])->update(['access_token'=>$accessToken]);
+            return response()->json([
+                'code' => 200,
+                'msg' => 'User logged in Successfully',
+                'data' => $user
             ], 200);
 
         } catch (\Throwable $th) {

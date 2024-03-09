@@ -57,9 +57,9 @@ return [
         ],
         'admin' => [
             'driver'     => 'local',
-            'root'       => public_path('uploads'),
+            'root'       => public_path('uploads'), // Đây là thư mục lưu trữ
             'visibility' => 'public',
-            'url' => env('APP_URL').'uploads/',
+            'url' => env('APP_URL').'uploads/', // URL truy cập đến thư mục lưu trữ
         ],
 
     ],
