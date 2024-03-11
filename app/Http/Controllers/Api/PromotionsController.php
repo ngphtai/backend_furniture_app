@@ -76,9 +76,33 @@ class PromotionsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(String $id,Request $request)
     {
-        //
+        try{
+            $request -> validate([
+                'id' => 'required',
+                'promotion_name' => 'nullable',
+                'description' => 'nullable',
+                'discount' => 'nullable | integer | min:0 | max:100',
+                'start_date' => 'nullable | date  ',
+                'end_date' => 'nullable | date  ',
+                'is_show' => 'nullable | boolean'
+            ]);
+
+            $promotion = Promotions::findOrFail($id);
+            $promotion -> promotion_name = $request -> promotion_name ?? $promotion -> promotion_name;
+            $promotion -> description = $request -> description ?? $promotion -> description;
+            $promotion -> discount = $request -> discount ?? $promotion -> discount;
+            $promotion -> start_date = $request -> start_date ?? $promotion -> start_date;
+            $promotion -> end_date = $request -> end_date ?? $promotion -> end_date;
+            $promotion -> is_show = $request -> is_show     ?? $promotion -> is_show;
+
+            $promotion -> save();
+            return response()->json(['message' => 'Promotion updated successfully',$promotion  ], 200);
+
+        }catch(\Exception $e){
+            return response()->json(['message' => 'Error updating promotion', 'error' => $e->getMessage()], 400);
+        }
     }
 
     /**
@@ -86,6 +110,12 @@ class PromotionsController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $promotion = Promotions::findOrFail($id);
+            $promotion->delete();
+            return response()->json(['message' => 'Promotion deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error deleting promotion', 'error' => $e->getMessage()], 400);
+        }
     }
 }

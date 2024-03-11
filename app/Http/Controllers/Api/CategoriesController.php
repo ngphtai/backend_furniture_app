@@ -122,36 +122,31 @@ class CategoriesController extends Controller
     public function update(String $id,Request $request ) // Hành động này thực hiện việc cập nhật dữ liệu trong cơ sở dữ liệu dựa trên dữ liệu mà người dùng đã chỉnh sửa trong biểu mẫu hoặc giao diện
     {
         try {
-            // $request->validate([
-            //     // 'id' => 'required',
-            //     'name' => 'nullable | string | max:255',
-            //     'image' => 'nullable |image | mimes:jpeg,png,jpg,gif',
-            // ]);
+            $request->validate([
+                // 'id' => 'required',
+                'name' => 'nullable | string | max:255',
+                'image' => 'nullable |image | mimes:jpeg,png,jpg,gif',
+            ]);
             // Tìm kiếm category theo ID
             $category = Categories::findOrFail($id);
 
             // Cập nhật dữ liệu category từ request
-            $category->name = $request->name;
+            $category->name = $request->name?? $category->name;
+
+             // Kiểm tra xem có tệp ảnh cũ và xóa nếu tồn tại
+            if ($category->image && file_exists(public_path('uploads/' . $category->image))) {
+                unlink(public_path('uploads/' . $category->image));
+            }
 
             // Kiểm tra xem có tệp ảnh mới được gửi đi không
             if ($request->hasFile('image')) {
-                // Kiểm tra xem category đã có ảnh trước đó hay không
-
-                    // Nếu có, xóa ảnh cũ
-                    $oldImagePath = public_path('uploads/' . $category->image);
-
-                        unlink($oldImagePath); // Xóa ảnh cũ từ thư mục uploads
-
-                    return response()->json(['message' => 'Upload image successfully', 'category' => $category], 200);
-
                 // Lưu ảnh mới
                 $image = $request->file('image');
                 $fileName = time() . '.' . $image->getClientOriginalExtension();
                 $image->move(public_path('uploads'), $fileName);
                 $category->image = $fileName;
+
             }
-            // else {
-            //     return response()->json(['message' => 'Image is required'], 400);}
 
             $category->save();
 
