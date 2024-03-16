@@ -17,15 +17,22 @@ class CategoriesController extends Controller
      */
     public function index()
     {
-        try {
-            $categories = categories::all(); // categories::all() phải trùng tên với tên model (model phải trùng tên với tên bảng trong database)
-
-            return response()->json(['status' => true, 'message' => 'Categories retrieved successfully', 'data' => $categories], 200);
-        } catch (\Exception $e) {
-            return response()->json(['status' => false, 'message' => 'Failed to retrieve categories', 'error' => $e->getMessage()], 500);
-        }
+       return view('page.category');
     }
 
+    public function list()
+    {
+        try {
+            // Lấy danh sách category từ cơ sở dữ liệu
+            $categories = Categories::all();
+
+            // Trả về danh sách category
+            return response()->json(['categories' => $categories], 200);
+        } catch (\Exception $e) {
+            // Xử lý nếu có lỗi xảy ra
+            return response()->json(['message' => 'Error retrieving categories', 'error' => $e->getMessage()], 500);
+        }
+    }
     /**
      * Show the form for creating a new resource.
      */
@@ -52,7 +59,7 @@ class CategoriesController extends Controller
 
         $categories->save();
 
-        return response()->json(['message' => 'Category created successfully', 'category' => $categories], 201);
+        return response()->json(['message' => 'Category created successfully', 'category' => $categories], 200);
 
         }catch(\Exception $e){
             return response()->json(['message' => 'Error creating category', 'error' => $e->getMessage()], 400);

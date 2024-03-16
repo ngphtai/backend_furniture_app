@@ -17,16 +17,22 @@ class ProductsController extends Controller
      */
     public function index()
     {
-        try {
-            $products = Products::all();
-
-            return response()->json(['status' => true, 'message' => 'Products retrieved successfully', 'data' => $products], 200);
-        } catch (\Exception $e) {
-            return response()->json(['status' => false, 'message' => 'Failed to retrieve products', 'error' => $e->getMessage()], 500);
-        }
+        return view('page.product');
     }
 
+    public function list()
+    {
+        try {
+            // Lấy danh sách sản phẩm từ cơ sở dữ liệu
+            $products = Products::all();
 
+            // Trả về danh sách sản phẩm
+            return response()->json(['products' => $products], 200);
+        } catch (\Exception $e) {
+            // Xử lý nếu có lỗi xảy ra
+            return response()->json(['message' => 'Error retrieving products', 'error' => $e->getMessage()], 500);
+        }
+    }
     /**
      * Show the form for creating a new resource.
      */
@@ -121,7 +127,7 @@ class ProductsController extends Controller
         $file = $_FILES['product_image'];
         $imagePaths = []; // Mảng chứa đường dẫn ảnh
         foreach (  $file  as $image) {
-            $fileName = time() . '_' . $image->getClientOriginalName();
+            $fileName = rand(99,9999) . '_' . $image->getClientOriginalName();
             $image->move(public_path('images'), $fileName);
             $imagePaths[] += $image;// Lưu đường dẫn của ảnh vào mảng
         }

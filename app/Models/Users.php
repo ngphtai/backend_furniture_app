@@ -15,7 +15,7 @@ class Users extends Model
         'email',
         'avatar',
         'user_type',
-        'adress',
+        'address',
         'phone_number'
     ];
     protected $casts = [

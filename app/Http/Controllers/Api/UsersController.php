@@ -7,25 +7,17 @@ use Illuminate\Http\Request;
 use App\Models\Users;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 
 class UsersController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        try{
-            $users = Users::all();
 
-            return response()->json(['status' => true, 'message' => 'Users retrieved successfully', 'data' => $users], 200);
 
-        }catch(\Exception $e){
-            return response()->json(['message' => 'Error retrieving users', 'error' => $e->getMessage()], 500);
-        }
-
+    public function index(){
+        $result['info'] = DB::table('users')->get()->toArray();
+        //set data to view
+        return view('page.Users', $result);
     }
-
     /**
      * Show the form for creating a new resource.
      */
@@ -37,9 +29,6 @@ class UsersController extends Controller
                 'name' => 'required',
                 'email' => 'required|email|unique:users',
                 'avatar' => 'required',
-                'user_type' => 'nullable',
-                'address' => 'nullable',
-                'phone_number' => 'nullable'
             ]);
 
             $user = new Users();
@@ -49,7 +38,7 @@ class UsersController extends Controller
             $user->avatar = $request->avatar;
 
             $user -> save();
-            return response()->json(['message' => 'User created successfully', 'user' => $user], 201);
+            return response()->json(['message' => 'User created successfully', 'user' => $user], 200);
 
         }catch(\Exception $e){
             return response()->json(['message' => 'Error creating user', 'error' => $e->getMessage()], 400);
@@ -61,7 +50,14 @@ class UsersController extends Controller
      */
     public function store(Request $request)
     {
-        //
+            // Lấy dữ liệu từ request
+        $data = $request->all();
+
+        // Lưu dữ liệu vào bảng
+        $user = Users::create($data);
+
+        // Trả về kết quả
+        return response()->json($user);
     }
 
     /**
@@ -134,5 +130,44 @@ class UsersController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function search(Request $request){
+
+        if($request->ajax()){
+
+            $data=Users::where('name','like','%'.$request->search.'%')
+            ->orwhere('email','like','%'.$request->search.'%')->get();
+
+            $output='';
+            if(count($data)>0){
+                $output ='
+                    <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                    </tr>
+                    </thead>
+                    <tbody>';
+                        foreach($data as $row){
+                            $output .='
+                            <tr>
+                            <th scope="row">'.$row->id.'</th>
+                            <td>'.$row->name.'</td>
+                            <td>'.$row->email.'</td>
+                            </tr>
+                            ';
+                        }
+                $output .= '
+                    </tbody>
+                    </table>';
+            }
+            else{
+                $output .='No results';
+            }
+            return $output;
+        }
     }
 }

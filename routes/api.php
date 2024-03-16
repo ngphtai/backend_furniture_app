@@ -49,4 +49,5 @@ Route::get('/users/all', [UsersController::class, 'index']);
 Route::post('/users/create', [UsersController::class, 'create']);
 Route::patch('/users/{id}/update', [UsersController::class, 'update']);
 Route::get('/users/pesonal/{id}', [UsersController::class, 'show']);
+Route::delete('/users/store', [UsersController::class, 'store']);
 
