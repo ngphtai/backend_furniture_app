@@ -370,11 +370,28 @@ a {
     border-radius: 16px;
   }
 
+  .image_review_category{
+    width: 250px;
+    height: 200px;
+    border-radius: 16px;
+  }
 
+  .size_button_action{
+    size:50px;
+    border-radius: 16px;
+  }
 
+  .no_boder{
+    border: 0px;
+  }
 
+  .no_margin_padding{
+    margin: 0px;
 
+    padding: 0px;
+  }
 
-
-
-
+ .center_table{
+    align-items: center;
+    justify-content: center;
+ }

@@ -21,7 +21,7 @@ class Products extends Model
         'quantity',
         'price',
         'sold',
-        'status',
+        'is_show',
     ];
 
 
@@ -29,6 +29,16 @@ class Products extends Model
      protected $casts = [
         'product_image' => 'array',
     ];
+
+    public function category()
+    {
+        return $this->belongsTo('App\Models\Categories');
+    }
+    public function promotion()
+    {
+        return $this->belongsTo('App\Models\Promotions');
+    }
+
     // public function setFilenamesAttribute($value) // setFilenamesAttribute là hàm set giá trị cho thuộc tính product_image trong model để lưu vào database dưới dạng json
     // {
     //     $this->attributes['product_image'] = json_encode($value);

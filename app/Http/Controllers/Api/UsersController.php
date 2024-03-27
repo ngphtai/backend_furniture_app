@@ -12,30 +12,99 @@ use Illuminate\Support\Facades\DB;
 class UsersController extends Controller
 {
 
+    public function Profile(){
+        // $result['info'] = DB::table('users')->where('user_type','admin' )->get()->toArray();
+        return view('page.admin_detail') ;
+    }
 
     public function index(){
         $result['info'] = DB::table('users')->get()->toArray();
-        //set data to view
         return view('page.Users', $result);
     }
-    /**
-     * Show the form for creating a new resource.
-     */
+
+    public function search(Request $request){
+        $output ="";
+        $stt = 1;
+        if($request->ajax() && $request->search != ""){
+            $data=Users::where('name','like','%'.$request->search.'%')
+            ->orwhere('email','like','%'.$request->search.'%')
+            ->orwhere('phone_number','like','%'.$request->search.'%')
+            ->orwhere('uid','like','%'.$request->search.'%')->get();
+            if(count($data)>0){
+                // $output ='
+                // <div class="alert alert-success">'.count($data).' kết quả được tìm thấy</div>
+
+                    foreach ($data as $item ){
+                    $output .='
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="ms-2">
+                                            <h6 class="mb-0 font-14">';
+                                                $output .= $stt++;
+                                 $output.= '</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>'.$item -> uid.'</td>
+                                <td>'.$item -> name.'</td>
+                                <td>';
+                                if($item->avatar){
+                                    $output.= ' <img class ="avatar" src="'. asset("storage/" . $item->avatar) .'" alt="No Avatar">';
+                                 }else{
+                                    $output .= ' <span class ="avatar">No avatar</span>';
+                                 };'
+                                </td>';
+                                $output .='
+                                <td>'.$item -> email.'</td>
+                                <td>';$output .=$item -> address ?? "trống" .'</td>
+                                <td>';$output .=$item -> phone_number ?? "trống".'</td>
+                                ';$output .= '<td>';$output .=$item -> user_type .'</td>
+                                <td>
+                                    <div class="d-flex order-actions">'
+                                        .' <a href= "/users/delete/'.$item->id.'" class="ms-3" onclick="'; $output .=' return confirm("Bạn có chắc chắn muốn xoá?")';$output .='"><i class="bx bxs-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>';
+                        }
+
+            }
+            else{
+                $output .='<div class="alert alert-danger">Không tìm thấy tài khoản nào</div>';
+            }
+            return $output;
+        }
+
+    }
+
+    //API
+
     public function create(Request $request)
     {
+        $existingUser = users::where('uid', $request->uid)->first();
+        if ($existingUser) {
+            return response()->json(['message' => 'đăng nhập thành công với gg', 'user' => $existingUser], 200);
+        }
         try{
             $validatedData = $request->validate([
                 'uid' => 'required',
                 'name' => 'required',
                 'email' => 'required|email|unique:users',
-                'avatar' => 'required',
+                'avatar' => 'nullable',
+                'password' => 'nullable',
+                'address' => 'nullable',
+                'phone_number' => 'nullable'
+
             ]);
 
             $user = new Users();
             $user->uid = $request->uid;
-            $user->name = $request->name;
+            $user->name = $request->name ;
             $user->email = $request->email;
-            $user->avatar = $request->avatar;
+            $user->avatar = $request->avatar ?? '/uploads/user1.jpg';
+            $user->password = $request->password ?? '';
+            $user->address = $request->address ?? '';
+
 
             $user -> save();
             return response()->json(['message' => 'User created successfully', 'user' => $user], 200);
@@ -45,77 +114,66 @@ class UsersController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+
+
+    public function show(Request $request)
     {
-            // Lấy dữ liệu từ request
-        $data = $request->all();
 
-        // Lưu dữ liệu vào bảng
-        $user = Users::create($data);
+            $profile = users::where('uid', $request->uid)->first();
+            $user = new Users();
+            $user -> uid = $profile->uid ;
+            $user -> name = $profile->name ;
+            $user -> email = $profile->email ;
+            $user -> avatar = $profile->avatar ;
+            if($profile->password != null){
+                $user -> password = $profile->password ;
+            } else {
+                $user -> password = '' ;
+            }
+            if( $profile->phone_number != null){
+                $user -> phone_number = $profile->phone_number ;
+            } else {
+                $user -> phone_number = '' ;
 
-        // Trả về kết quả
-        return response()->json($user);
-    }
+            }
+            if ($profile->address != null){
+                $user -> address = $profile->address ;
+            } else {
+                $user -> address = '' ;
+            }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        try{
-            $user = Users::findOrFail($id);
-
-            return response()->json(['status' => true, 'message' => 'User retrieved successfully', 'data' => $user], 200);
-
-        }catch(\Exception $e){
-            return response()->json(['message' => 'Error retrieving user', 'error' => $e->getMessage()], 500);
-        }
+            if ($profile) {
+                return response()->json(['message' => 'User fetched successfully', 'user' => $user], 200);
+            }
+            return response()->json(['message' => 'User not found'], 404);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request)
     {
         try{
 
             $validatedData = $request->validate([
+                'uid' => 'required',
                 'name' => 'nullable',
-                'email' => 'nullable|email|unique:users',
                 'avatar' => 'nullable',
                 'address' => 'nullable',
-                'phone_number' => 'nullable'
+                'phone_number' => 'nullable',
+                'email' => 'nullable | email',
+                'password' => 'nullable',
+
             ]);
-
-            $user = new Users();
-            $user = Users::findOrFail($id);
-            if($request->hasFile('avatar')){
-                // xóa file cũ trên storage public
-                $oldfile = public_path('storage/'.  basename($user->avatar));
-                unlink($oldfile);
-
-                $image = $request->file('avatar');
-                // đổi tên image thày tên mới là id của user
-                $fileName = $user-> uid . '.' . $image->getClientOriginalExtension();
-                $pathFile = $image->storeAs('avatars', $fileName, 'public');
-                 $user->avatar = $pathFile;
-
-            }
+            $user = users::where('uid', $request->uid)->first();
             $user->name = $request->name?? $user->name;
-            $user->email = $request->email ?? $user->email;
-            $user->adress = $request->adress ?? $user->adress;
+            $user->address = $request->address ?? $user->address;
             $user->phone_number = $request->phone_number?? $user->phone_number;
+            $user->password = $request->password ?? $user->password;
             $user -> save();
 
             return response()->json(['message' => 'User updated successfully', 'user' => $user], 200);
@@ -124,50 +182,28 @@ class UsersController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function update_avatar(Request $request)
     {
-        //
-    }
-
-    public function search(Request $request){
-
-        if($request->ajax()){
-
-            $data=Users::where('name','like','%'.$request->search.'%')
-            ->orwhere('email','like','%'.$request->search.'%')->get();
-
-            $output='';
-            if(count($data)>0){
-                $output ='
-                    <table class="table">
-                    <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Email</th>
-                    </tr>
-                    </thead>
-                    <tbody>';
-                        foreach($data as $row){
-                            $output .='
-                            <tr>
-                            <th scope="row">'.$row->id.'</th>
-                            <td>'.$row->name.'</td>
-                            <td>'.$row->email.'</td>
-                            </tr>
-                            ';
-                        }
-                $output .= '
-                    </tbody>
-                    </table>';
+        try{
+            $validatedData = $request->validate([
+                'uid' => 'required',
+                'avatar' => 'required|image',
+            ]);
+            $user = users::where('uid', $request->uid)->first();
+            if($user->avatar!= null){
+                $user->avatar = $request->avatar;
+                $filename = $user-> uid .'.' . $request->avatar->getClientOriginalExtension();
+                $path = $request->avatar->storeAs('avatars', $filename, 'public');
+                $user->avatar =  $path;
             }
-            else{
-                $output .='No results';
-            }
-            return $output;
+
+            $user -> save();
+            return response()->json(['message' => 'Avatar updated successfully', 'user' => $user], 200);
+        }catch(\Exception $e){
+            return response()->json(['message' => 'Error updating avatar', 'error' => $e->getMessage()], 400);
         }
     }
+
+
+
 }

@@ -21,4 +21,5 @@ class Users extends Model
     protected $casts = [
         'adress' => 'object',
     ];
+
 }

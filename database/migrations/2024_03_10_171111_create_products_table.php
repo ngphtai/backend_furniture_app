@@ -16,14 +16,13 @@ return new class extends Migration
             $table->string('product_name');
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->foreignId('promotion_id')->nullable()->onDelete('set null');
-            $table->foreignId('rating_id')->nullable()->onDelete('set null');
             $table->integer('rating_count')->default(0);
             $table->json('product_image')->nullable();
             $table->text('description')->nullable();
             $table->integer('quantity');
             $table->decimal('price', 8, 2);
             $table->integer('sold')->default(0);
-            $table->boolean('status')->default(true);
+            $table->boolean('is_show')->default(true);
             $table->timestamps();
         });
     }

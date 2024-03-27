@@ -33,7 +33,7 @@
 						<div class="menu-title">Users</div>
 					</a>
 
-					<a href="/products/index" >
+                    <a href="/products/index" >
 						<div class="parent-icon"><i class="bx bx-cart"></i>
 						</div>
 						<div class="menu-title">Products</div>
@@ -90,7 +90,7 @@
 							</div>
 						</a>
 						<ul class="dropdown-menu dropdown-menu-end">
-							<li><a class="dropdown-item" href="javascript:;"><i class="bx bx-user"></i><span>Profile</span></a>
+							<li><a class="dropdown-item" href="{{route('admin.profile')}}"><i class="bx bx-user"></i><span>Profile</span></a>
 							</li>
 							<li>
 								<div class="dropdown-divider mb-0"></div>

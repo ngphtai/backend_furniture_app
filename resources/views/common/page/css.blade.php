@@ -21,6 +21,10 @@
 <link rel="stylesheet" href="/assets/css/dark-theme.css" />
 <link rel="stylesheet" href="/assets/css/semi-dark.css" />
 <link rel="stylesheet" href="/assets/css/header-colors.css" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/5.3.45/css/materialdesignicons.css" integrity="sha256-NAxhqDvtY0l4xn+YVa6WjAcmd94NNfttjNsDmNatFVc=" crossorigin="anonymous" />
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
 <title>ANNT Store</title>
 
 

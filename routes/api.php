@@ -22,8 +22,8 @@ use App\Http\Controllers\Api\UsersController;
 
 
 //categories
-Route::post('/categories/create', [CategoriesController::class, 'create']);
-Route::get('/categories/all', [CategoriesController::class, 'index']);
+Route::post('/categories/store', [CategoriesController::class, 'store']);
+Route::get('/categories/all', [CategoriesController::class, 'show_all']);
 Route::get('/categories/show/{id}', [CategoriesController::class, 'show']); // lấy ra 1 category theo id
 Route::patch('/categories/{id}/update', [CategoriesController::class, 'update']); // cập nhật 1 category theo id
 Route::delete('/categories/delete/{id}', [CategoriesController::class, 'destroy']);
@@ -37,17 +37,12 @@ Route::delete('/promotions/delete/{id}', [PromotionsController::class, 'destroy'
 
 //product
 Route::post('/products/create', [ProductsController::class, 'create']);
-Route::get('/products/all', [ProductsController::class, 'index']);
-Route::patch('/products/{id}/update', [ProductsController::class, 'update']);
-Route::delete('/products/delete/{id}', [ProductsController::class, 'destroy']);
-Route::get('/products/detail/{id}', [ProductsController::class, 'show']);
-Route::get('/products/search/{name}', [ProductsController::class, 'search']);
-Route::get('/products/category/{id}', [ProductsController::class, 'showByCategory']);
-
+Route::get('/products/all', [ProductsController::class, 'showAll']);
+Route::patch('/products/update/{id}',[ProductsController::class,'update']);
 //user
 Route::get('/users/all', [UsersController::class, 'index']);
+Route::patch('/users/update_avatar', [UsersController::class, 'update_avatar']);
 Route::post('/users/create', [UsersController::class, 'create']);
-Route::patch('/users/{id}/update', [UsersController::class, 'update']);
-Route::get('/users/pesonal/{id}', [UsersController::class, 'show']);
-Route::delete('/users/store', [UsersController::class, 'store']);
+Route::post('/users/profile', [UsersController::class, 'show']);
+Route::post('/users/update_profile', [UsersController::class, 'update']);
 
