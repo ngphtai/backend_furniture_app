@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Categories extends Model
+class ForbiddenKeywords extends Model
 {
     use HasFactory;
-    protected $fillable = ['id','name', 'image','create_at','update_at'];
-
+    protected $table = 'forbidden_keywords';
+    protected $fillable = ['keyword'];
 }

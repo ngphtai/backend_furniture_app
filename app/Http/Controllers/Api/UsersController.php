@@ -98,10 +98,13 @@ class UsersController extends Controller
             ]);
 
             $user = new Users();
+            if($request->avatar ==''){
+                $user->avatar = 'storage/avatars/default.png';
+            }
             $user->uid = $request->uid;
             $user->name = $request->name ;
             $user->email = $request->email;
-            $user->avatar = $request->avatar ?? '/uploads/user1.jpg';
+            $user->avatar = $request->avatar ?? 'storage/avatars/default.png';
             $user->password = $request->password ?? '';
             $user->address = $request->address ?? '';
 
@@ -190,10 +193,11 @@ class UsersController extends Controller
                 'avatar' => 'required|image',
             ]);
             $user = users::where('uid', $request->uid)->first();
-            if($user->avatar!= null){
+            if($request->avatar!= null){
                 $user->avatar = $request->avatar;
                 $filename = $user-> uid .'.' . $request->avatar->getClientOriginalExtension();
-                $path = $request->avatar->storeAs('avatars', $filename, 'public');
+                $path =  $request->avatar->storeAs('avatars', $filename, 'public');
+                $path = "storage/" . $path;
                 $user->avatar =  $path;
             }
 

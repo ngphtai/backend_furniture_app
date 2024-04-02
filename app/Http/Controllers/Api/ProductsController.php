@@ -266,6 +266,10 @@ class ProductsController extends Controller
 
     public function showAll(){
         $products = Products::all();
+
+        foreach ($products as $product) {
+            $product->product_image = json_decode($product->product_image);
+        }
         return response()-> json(['products' => $products],200);
     }
 

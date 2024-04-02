@@ -10,7 +10,7 @@
                     <div class="card-body">
                         <div class="row mb-3">
                             <div class="d-flex flex-column align-items-center text-center">
-                                <img src ="{{asset('storage/avatars/default.png' )}}" alt="Admin" class="rounded-circle p-1 bg-primary" width="180">
+                                <img src ="{{asset('storage/avatars/user1.jpg' )}}" alt="Admin" class="rounded-circle p-1 bg-primary" width="180">
                                 <div class="mt-3">
                                     <h6 style="font-size: 30px">John Doe</h6>
                                 </div>

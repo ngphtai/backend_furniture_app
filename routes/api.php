@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\CategoriesController;
 use App\Http\Controllers\Api\PromotionsController;
 use App\Http\Controllers\Api\ProductsController;
 use App\Http\Controllers\Api\UsersController;
+use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\CommentsController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -22,27 +24,30 @@ use App\Http\Controllers\Api\UsersController;
 
 
 //categories
-Route::post('/categories/store', [CategoriesController::class, 'store']);
-Route::get('/categories/all', [CategoriesController::class, 'show_all']);
-Route::get('/categories/show/{id}', [CategoriesController::class, 'show']); // lấy ra 1 category theo id
-Route::patch('/categories/{id}/update', [CategoriesController::class, 'update']); // cập nhật 1 category theo id
-Route::delete('/categories/delete/{id}', [CategoriesController::class, 'destroy']);
+Route::post('/categories/all', [CategoriesController::class, 'show_all']);
+Route::get('/categories/show/{id}', [CategoriesController::class, 'show']); // lấy ra 1 category theo id CAAFN SUA
 
 //promotion
-
-Route::post('/promotions/create', [PromotionsController::class, 'create']);
 Route::get('/promotions/all', [PromotionsController::class, 'index']);
-Route::patch('/promotions/{id}/update', [PromotionsController::class, 'update']);
-Route::delete('/promotions/delete/{id}', [PromotionsController::class, 'destroy']);
 
 //product
-Route::post('/products/create', [ProductsController::class, 'create']);
-Route::get('/products/all', [ProductsController::class, 'showAll']);
+Route::post('/products/all', [ProductsController::class, 'showAll']);
 Route::patch('/products/update/{id}',[ProductsController::class,'update']);
+
 //user
-Route::get('/users/all', [UsersController::class, 'index']);
-Route::patch('/users/update_avatar', [UsersController::class, 'update_avatar']);
+Route::post('/users/update_avatar', [UsersController::class, 'update_avatar']);
 Route::post('/users/create', [UsersController::class, 'create']);
 Route::post('/users/profile', [UsersController::class, 'show']);
 Route::post('/users/update_profile', [UsersController::class, 'update']);
+
+//cart
+Route::post('/cart/create', [CartController::class, 'create']);
+Route::get('/cart/show/', [CartController::class, 'get']);
+
+//comment
+Route::post('/comments/create', [CommentsController::class, 'create']);
+Route::get('/comments/show/', [CommentsController::class, 'show']);
+Route::post('/comments/addkey', [CommentsController::class, 'addForbiddeneywords']);
+Route::delete('/comments/delete/', [CommentsController::class, 'delete']);
+
 

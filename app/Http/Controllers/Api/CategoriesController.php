@@ -184,10 +184,10 @@ class CategoriesController extends Controller
             $categories = Categories::all();
 
             // Trả về danh sách category
-            return response()->json(['categories' => $categories], 200);
+            return response()->json(['message' => 'get successfuly categories','categories' => $categories], 200);
         } catch (\Exception $e) {
             // Xử lý nếu có lỗi xảy ra
-            return response()->json(['message' => 'Error retrieving categories', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Error get categories', 'error' => $e->getMessage()], 500);
         }
     }
     public function show(string $id)

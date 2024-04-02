@@ -10,6 +10,7 @@
                 </ol>
             </nav>
         </div>
+
         <!--end breadcrumb-->
 
         <div class="card">
@@ -20,11 +21,7 @@
                         <span class="position-absolute top-50 product-show translate-middle-y" ><i class="bx bx-search"></i></span>
                     </div>
                     {{-- button add ( cái hiển thị của nó là Add New promotion--}}
-
                     <a href="{{ url('products/addproduct') }}" class="ms-auto btn btn-primary radius-30 mt-2 mt-lg-0"><i class="bx bxs-plus-square"></i>Thêm sản phẩm</a>
-
-
-
                 </div>
                 {{-- bắt sự kiện tạo mới sản phẩm thành công  --}}
                 @if(session('success'))
@@ -53,7 +50,6 @@
                                         <?php
                                         $info = App\Models\Products::with('promotion')->get();
                                         $info = App\Models\Products::with('category')->get();
-
                                         // lấy ra tất cả sản phẩm và danh mục của sản phẩm ( trong model Products có 1 hàm category dùng để lấy ra danh mục của sản phẩm)
                                         ?>
                                         @foreach ($info as $item )

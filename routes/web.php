@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\PromotionsController;
 use App\Http\Controllers\Api\CategoriesController;
 use App\Http\Controllers\testController;
 use App\Http\Controllers\Api\UsersController;
-use App\Models\Categories;
+use App\Http\Controllers\Api\CommentsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,7 +66,12 @@ Route::get('/test',[testController::class,'index']);
     });
 
 
-
+    Route::group(['prefix' => '/comments'],function(){
+        Route::get('/index',[CommentsController::class,'index'])-> name ('comment.index');
+        Route::get('/search',[CommentsController::class,'search']) -> name('comment.search');
+        Route::post('/add_forbidden_keywords',[CommentsController::class,'addForbiddeneywords']) -> name('comment.add_keyword');
+        Route::get('/delete/key', [CommentsController::class,'delete']) -> name('comment.delete_keyword');
+    });
 
 
 

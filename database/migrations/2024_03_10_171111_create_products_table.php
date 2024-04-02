@@ -20,7 +20,7 @@ return new class extends Migration
             $table->json('product_image')->nullable();
             $table->text('description')->nullable();
             $table->integer('quantity');
-            $table->decimal('price', 8, 2);
+            $table->decimal('price', 8, 2);// decimal là kiểu số
             $table->integer('sold')->default(0);
             $table->boolean('is_show')->default(true);
             $table->timestamps();

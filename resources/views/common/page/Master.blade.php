@@ -44,7 +44,11 @@
 						</div>
 						<div class="menu-title">Promotions</div>
 					</a>
-
+                    <a href="/comments/index" >
+                        <div class="parent-icon"><i class="bx bx-comment-check"></i>
+                        </div>
+                        <div class="menu-title">Comment</div>
+                    </a>
                     <a href="/categories/index" >
 						<div class="parent-icon"><i class="bx bx-category"></i>
 						</div>
@@ -60,8 +64,6 @@
 						</div>
 						<div class="menu-title">Messenger</div>
 					</a>
-
-
 
 
 			<!--end navigation-->

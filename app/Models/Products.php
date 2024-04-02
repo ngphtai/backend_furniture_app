@@ -14,7 +14,6 @@ class Products extends Model
         'product_name',
         'category_id',
         'promotion_id',
-        'rating_id',
         'rating_count',
         'product_image',
         'description',
@@ -38,6 +37,7 @@ class Products extends Model
     {
         return $this->belongsTo('App\Models\Promotions');
     }
+
 
     // public function setFilenamesAttribute($value) // setFilenamesAttribute là hàm set giá trị cho thuộc tính product_image trong model để lưu vào database dưới dạng json
     // {
