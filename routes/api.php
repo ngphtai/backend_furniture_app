@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ProductsController;
 use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CommentsController;
+use App\Http\Controllers\Api\NotificationsController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -41,8 +42,10 @@ Route::post('/users/profile', [UsersController::class, 'show']);
 Route::post('/users/update_profile', [UsersController::class, 'update']);
 
 //cart
-Route::post('/cart/create', [CartController::class, 'create']);
-Route::get('/cart/show/', [CartController::class, 'get']);
+Route::post('/carts/create', [CartController::class, 'addToCart']);
+Route::post('/carts/update', [CartController::class, 'update']);
+Route::post("/carts/delete", [CartController::class, 'delete']);
+Route::get('/carts/show/', [CartController::class, 'get']);
 
 //comment
 Route::post('/comments/create', [CommentsController::class, 'create']);
@@ -51,3 +54,7 @@ Route::post('/comments/addkey', [CommentsController::class, 'addForbiddeneywords
 Route::delete('/comments/delete/', [CommentsController::class, 'delete']);
 
 
+//Notification
+Route::post('/notifications/create', [NotificationsController::class, 'create']);
+Route::get('/notifications/show/', [NotificationsController::class, 'show']);
+Route::get('/notifications/update/', [NotificationsController::class, 'update']);

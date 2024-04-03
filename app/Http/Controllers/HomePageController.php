@@ -9,4 +9,7 @@ class HomePageController extends Controller
     public function index(){
         return view('page.index');
     }
+    public function Login(){
+        return view('page.auth.login');
+    }
 }

@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\CommentsController;
 |
 */
 // cái này là rou
+Route::get ('/',[HomePageController::class,'Login']);
 Route::get('/homepage',[HomePageController::class,'index']);
 Route::get('/test',[testController::class,'index']);
 

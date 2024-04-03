@@ -15,11 +15,11 @@ class Comments extends Model
 
     public function user()
     {
-        return $this->belongsTo('App\Models\Users');
+        return $this->belongsTo('App\Models\Users', 'user_id', 'id');
     }
     public function product()
     {
-        return $this->belongsTo('App\Models\Products');
+        return $this->belongsTo('App\Models\Products', 'product_id', 'id');
     }
 
 }

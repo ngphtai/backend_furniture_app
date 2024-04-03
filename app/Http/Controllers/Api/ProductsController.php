@@ -245,7 +245,7 @@ class ProductsController extends Controller
    public function list()
     {
         try {
-            $products = Products::all();
+            $products = Products::where('is_show', 1)->get();
             return response()->json(['products' => $products], 200);
         } catch (\Exception $e) {
             // Xử lý nếu có lỗi xảy ra
@@ -254,18 +254,20 @@ class ProductsController extends Controller
     }
     public function show(string $id)
     {
-        $product = Products::findOrFail($id);
+        $product = Products::findOrFail($id)->where('is_show', 1)->get();
         return response()->json(['product' => $product], 200);
     }
 
     public function showByCategory(string $id)
     {
-        $products = Products::where('category_id', $id)->get();
+        $products = Products::where('category_id', $id)
+                            ->where('is_show', 1)
+                            ->get();
         return response()->json(['products' => $products], 200);
     }
 
     public function showAll(){
-        $products = Products::all();
+        $products = Products::where('is_show', 1)->get();
 
         foreach ($products as $product) {
             $product->product_image = json_decode($product->product_image);
@@ -275,8 +277,7 @@ class ProductsController extends Controller
 
     public function search(string $name)
     {
-        $products = Products::where('product_name', 'like', '%' .$name . '%')->get();
-
+        $products = Products::where('product_name', 'like', '%' .$name . '%')->where('is_show',1)->get();
         if ($products->isEmpty()) {
             return response()->json(['message' => 'No products found with the given name'], 200);
         }

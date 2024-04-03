@@ -72,7 +72,7 @@
 
                             <td>
                                 @if($item->avatar)
-                                    <img class ="avatar" src="{{ asset('storage/' . $item->avatar) }}" alt="No Avatar">
+                                    <img class ="avatar" src="{{ asset( $item->avatar) }}" alt="No Avatar">
                                 @else
                                     <span class ="avatar">No avatar</span>
                                 @endif
