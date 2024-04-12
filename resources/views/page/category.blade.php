@@ -87,7 +87,7 @@
                     </table>
                 </div>
                 <!-- Add New Product -->
-                <div class="modal fade" id="addCategory" tabindex="-1" aria-labelledby="addCategory" aria-hidden="true">
+                <div class="modal fade" id="addCategory" tabindex="0" aria-labelledby="addCategory" aria-hidden="true">
                     <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -197,6 +197,30 @@
         });
     </script>
 
+    {{-- add  --}}
+    <script>
+        $(document).ready(function(){
+            $('#addCategory').on('click','#addCategoryBtn',function(event){
+                event.preventDefault();
+                alert('ok');
+                categoryData = $('#add_category_form').serialize();
+                $.ajax({
+                    url: '{{ route('category.store') }}',
+                    method: 'POST',
+                    data: categoryData,
+                    success: function(response){
+                        if(response.status == 200){
+                            $('#addCategoryModal').modal('hide');
+                            location.reload();
+                        }
+                    },
+                    error: function(error){
+                        console.error('Error adding category:', error);
+                    }
+                });
+            });
+        });
+    </script>
 
     {{-- edit  --}}
     <script>

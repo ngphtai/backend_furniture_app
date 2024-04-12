@@ -182,7 +182,7 @@
                                                     <div class="row row-cols-auto g-3 all_key"  >
                                                         @foreach ($keys as $key)
                                                             <div class="col">
-                                                                <div type="button" class="btn btn-info keys-detail" id="keys-detail">{{$key}} <span class="badge bg-red "><i class="bx bxs-trash"></i></span>
+                                                                <div type="button" class="btn btn-info key-detail" id="key-detail">{{$key}} <span class="badge bg-red "><i class="bx bxs-trash"></i></span>
                                                                 </div>
                                                             </div>
                                                         @endforeach
@@ -294,7 +294,7 @@
                 'delete_key': key
             },
             success: function(data) {
-                alert(key);
+                // alert(key);
                 $('.all_key').hide();
                 $('.list_key').html(data);
                 $('.list_key').show();
@@ -311,7 +311,7 @@
                 'delete_key': key
             },
             success: function(data) {
-                alert(key);
+                // alert(key);
                 $('.all_key').hide();
                 $('.list_key').html(data);
                 $('.list_key').show();

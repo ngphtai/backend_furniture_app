@@ -5,13 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Products;
-use Encore\Admin\Actions\Response;
 use Illuminate\Support\Facades\DB;
-use Hamcrest\Arrays\IsArray;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\ListingImage;
-use Illuminate\Http\UploadedFile\array;
-use LDAP\Result;
+use App\Models\Promotions;
+use App\Models\Colors;
+
 
 class ProductsController extends Controller
 {
@@ -19,6 +17,7 @@ class ProductsController extends Controller
     public function index()
     {
         $result['info'] = DB::table('products')->get()->toArray();
+        $result['colors'] = DB::table('colors')->get()->toArray();
         return view('page.product')-> with($result);
     }
 
@@ -55,7 +54,7 @@ class ProductsController extends Controller
         $product->product_name = $request->product_name;
         $product->category_id = $request->category_id;
         $product->promotion_id = $request->promotion_id?? '';
-        $product->rating_count = $request->rating_count??0;
+        $product->rating_count = $request->rating_count?? 5;
         $product->description = $request->description;
         $product->quantity = $request->quantity;
         $product->price = $request->price;
@@ -108,7 +107,7 @@ class ProductsController extends Controller
 
 
         if ($request->has('images')) {
-            $images = explode(',', $request->images);
+            $images = explode(',', $request->images); // lấy ra mảng ảnh cũ
 
             // $imges_array = substr($images_string, 2, -2);
             // $images = explode(',',  $imges_array );
@@ -242,47 +241,85 @@ class ProductsController extends Controller
     }
 
     // API
-   public function list()
+    //detail product
+    public function show(Request $request)
     {
-        try {
-            $products = Products::where('is_show', 1)->get();
-            return response()->json(['products' => $products], 200);
-        } catch (\Exception $e) {
-            // Xử lý nếu có lỗi xảy ra
-            return response()->json(['message' => 'Error retrieving products', 'error' => $e->getMessage()], 500);
-        }
-    }
-    public function show(string $id)
-    {
-        $product = Products::findOrFail($id)->where('is_show', 1)->get();
+        $product = Products::where("id",$request ->id)->where('is_show', 1)->first();
+        // lấy ra discount khuyến mãi đưa vào promotion_id của sản phẩm
+        $promotion = Promotions::where("id",$product->promotion_id)->first();
+                if(empty($promotion)){
+                    $product-> promotion_id = 0;
+                }
+                else{
+                    if(time() > strtotime($promotion->start_date) && time() < strtotime($promotion->end_date)){
+                        $product-> promotion_id = $promotion->discount;
+                    }
+                    else {
+                        $product-> promotion_id = 0;
+                    }
+                }
+            //  lấy màu của sản phẩm và đưa vào biến color_name
+            $color_id = mb_substr($product->product_name, 5, 1);
+            $color = Colors::where('id',$color_id)->first();
+            $color = $color->color_name;
+            $product-> color_name = $color;
+            $product->product_image = json_decode($product->product_image);
+        //giải mã ảnh
+        $product->product_image = json_decode($product->product_image);
+
         return response()->json(['product' => $product], 200);
     }
 
-    public function showByCategory(string $id)
-    {
-        $products = Products::where('category_id', $id)
-                            ->where('is_show', 1)
-                            ->get();
-        return response()->json(['products' => $products], 200);
-    }
+    // public function showByCategory(Request $request)
+    // {
+    //     $products = Products::where('category_id', $request ->id)
+    //                         ->where('is_show', 1)
+    //                         ->get();
+    //     foreach ($products as $product) {
+    //         $promotion = Promotions::findOrFail($product->promotion_id)->first();
+    //             if(time() > strtotime($promotion->start_date) && time() < strtotime($promotion->end_date)){
+    //                 $product-> promotion_id = $promotion->discount;
+    //             }
+    //             else {
+    //                 $product-> promotion_id = 0;
+    //             }
 
-    public function showAll(){
+    //         //lấy màu của sản phẩm và đưa vào biến color_name
+    //         $color_id = mb_substr($product->product_name, 5, 1);
+    //         $color = Colors::where('id',$color_id)->first();
+    //         $color = $color->color_name;
+    //         $product-> color_name = $color;
+    //        $product->product_image = json_decode($product->product_image);
+    //     }
+    //     return response()->json(['products' => $products], 200);
+    // }
+
+
+    public function all(){
         $products = Products::where('is_show', 1)->get();
-
         foreach ($products as $product) {
+            $promotion = Promotions::where("id",$product->promotion_id)->first();
+                if(empty($promotion)){
+                    $product-> promotion_id = 0;
+                }
+                else{
+                    if(time() > strtotime($promotion->start_date) && time() < strtotime($promotion->end_date)){
+                        $product-> promotion_id = $promotion->discount;
+                    }
+                    else {
+                        $product-> promotion_id = 0;
+                    }
+                }
+            //  lấy màu của sản phẩm và đưa vào biến color_name
+            $color_id = mb_substr($product->product_name, 5, 1);
+            $color = Colors::where('id',$color_id)->first();
+            $color = $color->color_name;
+            $product-> color_name = $color;
             $product->product_image = json_decode($product->product_image);
         }
         return response()-> json(['products' => $products],200);
     }
 
-    public function search(string $name)
-    {
-        $products = Products::where('product_name', 'like', '%' .$name . '%')->where('is_show',1)->get();
-        if ($products->isEmpty()) {
-            return response()->json(['message' => 'No products found with the given name'], 200);
-        }
 
-        return response()->json(['message' => 'Products found successfully', 'products' => $products], 200);
-    }
 
 }

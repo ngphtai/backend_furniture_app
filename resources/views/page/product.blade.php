@@ -20,8 +20,13 @@
                         <input type="text" name="search" id="search" class="form-control ps-5 radius-30" placeholder="Tìm kiếm sản phẩm" style="width: 600px;" onfocus="this.value=''">
                         <span class="position-absolute top-50 product-show translate-middle-y" ><i class="bx bx-search"></i></span>
                     </div>
-                    {{-- button add ( cái hiển thị của nó là Add New promotion--}}
+                    <div class ="ms-auto">
+                        <button type="button" class="btn btn-primary radius-30 mt-2 mt-lg-0" data-bs-toggle="modal" data-bs-target="#ColorManagement">
+                            <i class="bx bxs-plus-square"></i>Quản lý màu sắc
+                        </button>
+                    </div>
                     <a href="{{ url('products/addproduct') }}" class="ms-auto btn btn-primary radius-30 mt-2 mt-lg-0"><i class="bx bxs-plus-square"></i>Thêm sản phẩm</a>
+
                 </div>
                 {{-- bắt sự kiện tạo mới sản phẩm thành công  --}}
                 @if(session('success'))
@@ -122,7 +127,7 @@
                                             </td>
                                             <td class="col-md-1">
                                                 <div class="d-flex order-actions">
-                                                    <a href="{{url('products/delete',$item->id)}}"  onclick="return confirm('Bạn có chắc chắn muốn xoá?')"><i class='bx bxs-trash' ></i></a>
+                                                    <a href="{{url('products/delete',$item->id)}}"   onclick="return confirm('Bạn có chắc chắn muốn xoá?')"><i class='bx bxs-trash' ></i></a>
                                                 </div>
                                             </td>
 
@@ -132,11 +137,68 @@
                                 </table>
                             </div>
                         </div>
-
                 </div>
         </div>
     </div>
 
+    <!-- Color Management -->
+    <div class="modal fade" id="ColorManagement" tabindex="-1" aria-labelledby="ColorManagement" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ColorManagementLabel">Quản lý màu sắc</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{route('color.add')}}" method="POST" id ="form_color" enctype="multipart/form-data">
+                    @csrf
+                    <div class="mb-3">
+                        <div class="table-responsive">
+                            <table class = "table mb-0">
+                                    @if(session('success'))
+                                        <div class="alert alert-success" role="alert">
+                                            {{session() -> get('success')}}
+                                    </div>
+                                    @endif
+                                    @if($errors->any())
+                                        <div class=" alert alert-danger" role="alert">
+                                            @foreach ($errors->all() as $error)
+                                            <li class='list-group-item text-danger'>{{$error}}</li>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                    <div class ="all-color">
+                                            @foreach ($colors as $color)
+                                                <tr>
+                                                    <td >
+                                                        <a class="ms-auto radius-30 text-black " style=" width:100px; height:30px;margin-top:20px">{{$color->id}} </a>
+                                                    </td>
+                                                    <td >
+                                                        <div class="ms-auto radius-30 " style="background-color: #{{$color->color_name }}; width:150px; height: 30px; margin:0 20px 20px 0"></div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="ms-auto radius-30 btn edit-btn" id = '{{$color ->id}}'  style=" width:100px; height: 40px;">
+                                                              <i class='bx bxs-edit text-black' ></i>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                    </div>
+                                    <div class ="list-color" style="display:none">
+                            </table>
+                            <hr class="mt-4">
+                                <label  class="form-label "  >Thêm từ khoá</label>
+                                <div class="mb-3 d-flex">
+                                    <input type= "hidden" name ="id" id="id"></input>
+                                    <input name="color_name" id ="color_name" type="text" style ="margin:0 5px 5px 0" class="form-control"  placeholder="Nhập mã màu muốn thêm *" required>
+                                    <button  type="submit" style ="margin:5px" class="btn btn-primary " >Thêm</button>
+                                </div>
+                        </div>
+                    </div>
+                </form>
+        </div>
+        </div>
+    </div>
 
 
 
@@ -144,6 +206,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
 
 
 <script>
@@ -151,7 +214,6 @@
     $(document).ready(function(){
         $('#search').on('keyup',function(){
             var query= $(this).val();
-
             if(query){
                 $('#alldata').hide();
                 $('#search_list').show();
@@ -171,5 +233,80 @@
     });
 </script>
 
+<script>
+   $(document).ready(function() {
+        $('#color_name').val(null);
+        $('#id').val(null);
+        // Ensure ColorManagement element exists before attaching event handler
+        if ($('#ColorManagement').length > 0) {
+            $('#ColorManagement').on('click', '.edit-btn', function(e) {
+            e.preventDefault();
 
+            var id = $(this).attr('id');
+            console.log("Edit button clicked with ID:", id);
+
+            $('submit').val("Câp nhật"); // Update button text
+
+            $.ajax({
+                type: "GET",
+                url: "{{ route('color.edit') }}", // Check route helper definition
+                data: {
+                "id": id,
+                "_token": "{{ csrf_token() }}" // Check CSRF token generation
+                },
+                success: function(data) {
+                console.log("AJAX success:", data);
+                $('#color_name').val(data.color_name);
+                $('#id').val(data.id);
+                },
+                error: function(error) {
+                console.error("AJAX error:", error);
+                alert(error.message);
+                }
+            });
+            });
+        } else {
+            console.warn("Element with ID 'ColorManagement' not found"); // Debugging log
+        }
+
+    });
+</script>
+
+{{-- <script>
+    $(document).ready(function(){
+        $('.form_color').on('submit', function(e){
+            $type = $(this).attr('method');
+            alert($type);
+            e.preventDefault();
+            $check =  $('input#color_name').val();
+            alert($check);
+                var form = $(this);
+                var data = form.serialize();
+                $.ajax({
+                    type: "$type ",
+                    url: "{{route('color.create')}}" ,
+                    data:
+                    {
+                        "colors_name": $('input#color_name').val()
+                        "_token": "{{ csrf_token() }}",
+                    },
+                    success: function(data){
+                        alert(data);
+                        $('.all-color').hide();
+                        $('.list-color').html(data);
+                        $('.list-color').show();
+                    },
+                    error: function(error){
+                        alert("error" + error);
+                    }
+                });
+        });
+    })
+</script> --}}
+
+<script>
+    if (window.location.protocol !== "https:") {
+      window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
+    }
+  </script>
 @endsection

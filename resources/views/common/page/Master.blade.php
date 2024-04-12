@@ -7,7 +7,9 @@
 
 <body>
 	<!--wrapper-->
-
+<?php
+    $user = auth()->guard('ANNTStore')->user();
+    ?>
 		<!--sidebar wrapper -->
 		<div class="sidebar-wrapper" data-simplebar="true">
 			<div class="sidebar-header">
@@ -85,10 +87,11 @@
 					</div>
 					<div class="user-box dropdown">
 						<a class="d-flex align-items-center nav-link dropdown-toggle dropdown-toggle-nocaret" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-							<img src="/assets/images/avatars/avatar-2.png" class="user-img" alt="user avatar">
+							<img src='{{asset("$user->avatar")}}' class="user-img" alt="user avatar">
 							{{-- thông tin admin --}}
                             <div class="user-info ps-3">
-								<p class="user-name mb-0">Admin</p>
+								<p class="user-name mb-0">{{$user-> name}}</p>
+                                <p class="designattion mb-0">{{$user->user_type}}</p>
 							</div>
 						</a>
 						<ul class="dropdown-menu dropdown-menu-end">
@@ -97,7 +100,7 @@
 							<li>
 								<div class="dropdown-divider mb-0"></div>
 							</li>
-							<li><a class="dropdown-item" href="javascript:;"><i class='bx bx-log-out-circle'></i><span>Logout</span></a>
+							<li><a class="dropdown-item" href="{{route('logout')}}"><i class='bx bx-log-out-circle'></i><span>Logout</span></a>
 							</li>
 						</ul>
 					</div>

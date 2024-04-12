@@ -3,6 +3,7 @@
 namespace App\Http;
 
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use App\Http\Middleware\UpgradeToHttpsUnderNgrok;
 
 class Kernel extends HttpKernel
 {
@@ -36,6 +37,8 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            UpgradeToHttpsUnderNgrok::class,
+
         ],
 
         'api' => [
@@ -64,5 +67,8 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+           // tạo middleware checkAdminLogin để kiểm tra xem user có phải admin hay không
+           'checkAdminLogin' => \App\Http\Middleware\checkAdminLogin::class,
+
     ];
 }

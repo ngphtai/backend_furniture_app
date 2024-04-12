@@ -18,24 +18,28 @@
                   </div>
                 <span>Đăng nhập</span>
             </div>
-            <div class ="input-field">
-                <input type ="text"class = "input" placeholder="Email" required>
-            </div>
-            <div class ="input-field">
-                <input type ="password"class = "input" placeholder="Mật khẩu" required>
-            </div>
-            <div class = "input-field">
-                <input type ="submit" class ="submit" value="Đăng nhập">
-            </div>
-
-            <div class ="bottom">
-                <div class ="left">
-                    <input type ="checkbox" id ="remember">
-                    <label for ="remember">Ghi nhớ tài khoản</label>
+            <form action="/admin/login" method="POST">
+                @csrf
+                <div class ="input-field" for ="email">
+                    <input type ="email" name ="email" id ="email" class = "input" placeholder="Email" required>
                 </div>
-            </div>
+                <div class ="input-field" for ="password">
+                    <input type ="password" name ="password" id ="password"class = "input" placeholder="Mật khẩu" required>
+                </div>
+                <div class = "input-field">
+                    <input type ="submit" class ="submit" value="Đăng nhập">
+                </div>
+                <div class ="bottom">
+                    <div class ="left">
+                        <input type ="checkbox" id ="remember">
+                        <label for ="remember">Ghi nhớ tài khoản</label>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </section>
 </body>
 </html>
+
+

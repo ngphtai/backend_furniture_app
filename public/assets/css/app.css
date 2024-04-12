@@ -2659,3 +2659,9 @@ input.search-control-2::placeholder {
     height: 300px;
     border-radius: 16px;
 }
+    .center-box{
+        display: flex;
+
+
+    }
+

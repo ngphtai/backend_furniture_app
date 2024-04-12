@@ -8,7 +8,7 @@ use App\Models\Users;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Str;
 class UsersController extends Controller
 {
 
@@ -22,6 +22,64 @@ class UsersController extends Controller
         return view('page.Users', $result);
     }
 
+    public function addNewUser(Request $request)
+    {
+        try {
+            $this->validate($request, [
+                'uid' => 'required',
+                'name' => 'required',
+                'email' => 'required|email', // Added email validation
+                'password' => 'required',
+                'user_type' => 'required',
+            ]);
+
+            $currentUser = auth()->guard('ANNTStore')->user();
+
+            if ($currentUser->user_type != 'Admin') {
+                if ($request->user_type == 'Admin' || $request->user_type == 'Staff') {
+                    toastr()->error("Tài khoản không có quyền thực hiện chức năng này!");
+                    return redirect()->route('user.index');
+                }
+            }
+            $user = new Users();
+            $user->uid = $request->uid;
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->password = bcrypt($request->password);
+            $user->user_type = $request->user_type;
+            $user->avatar = 'storage/avatars/default.png';
+            $user->save();
+
+            toastr()->success('Thêm tài khoản thành công');
+            return redirect()->route('users.index');
+
+        } catch (\Exception $e) {
+            toastr()->error('Thêm tài khoản thất bại: ' . $e->getMessage());
+            return response()->json(['message' => 'Error creating user', 'error' => $e->getMessage()], 400);
+        }
+    }
+
+    public function block(String $id){
+        try{
+            $user = Users::where('id',$id)->first();
+            if($user -> is_lock == 0){
+                $user -> is_lock = 1;
+                $user -> save();
+                toastr()-> success("Khoá tài khoản thành công");
+                return redirect()->route('user.index');
+            }else{
+                $user -> is_lock = 0;
+                $user -> save();
+                toastr()-> success("Mở khoá tài khoản thành công");
+                return redirect()->route('user.index');
+            }
+        }catch(\Exception $e){
+            toastr()->error('Thao tác thất bại: ' . $e->getMessage());
+            return response()->json(['message' => 'Error creating user', 'error' => $e->getMessage()], 400);
+        }
+
+    }
+
     public function search(Request $request){
         $output ="";
         $stt = 1;
@@ -33,7 +91,6 @@ class UsersController extends Controller
             if(count($data)>0){
                 // $output ='
                 // <div class="alert alert-success">'.count($data).' kết quả được tìm thấy</div>
-
                     foreach ($data as $item ){
                     $output .='
                             <tr>
@@ -45,26 +102,44 @@ class UsersController extends Controller
                                  $output.= '</h6>
                                         </div>
                                     </div>
-                                </td>
-                                <td>'.$item -> uid.'</td>
+                                <td>'.Str::limit($item->uid, 10, '...').'</td>
                                 <td>'.$item -> name.'</td>
                                 <td>';
                                 if($item->avatar){
-                                    $output.= ' <img class ="avatar" src="'. asset("storage/" . $item->avatar) .'" alt="No Avatar">';
+                                    $output.= ' <img class ="avatar" src="'. asset( $item->avatar) .'" alt="No Avatar">';
                                  }else{
                                     $output .= ' <span class ="avatar">No avatar</span>';
-                                 };'
-                                </td>';
+                                 };'</td>';
                                 $output .='
                                 <td>'.$item -> email.'</td>
-                                <td>';$output .=$item -> address ?? "trống" .'</td>
+                                <td>';
+                                    if($item -> address == null )
+                                        $output.='trống';
+                                    else{
+                                        $output.= Str::limit($item->address, 10, '').'<br>';
+                                        if (strlen($item->address) > 10)
+                                        $output.= Str::substr($item->address, 10);
+
+                                    }
+                                    ;'</td>';
+                                $output .='
                                 <td>';$output .=$item -> phone_number ?? "trống".'</td>
                                 ';$output .= '<td>';$output .=$item -> user_type .'</td>
+                                <td>';
+                                    if($item -> is_lock == 0){
+                                        $output .= '<span class="badge bg-success">Hoạt động</span>';
+                                    }else{
+                                        $output .= '<span class="badge bg-danger">Đã khoá</span>';
+                                    }
+                                    $output .= '</td>
                                 <td>
-                                    <div class="d-flex order-actions">'
-                                        .' <a href= "/users/delete/'.$item->id.'" class="ms-3" onclick="'; $output .=' return confirm("Bạn có chắc chắn muốn xoá?")';$output .='"><i class="bx bxs-trash"></i></a>
-                                    </div>
-                                </td>
+                                    <div class="d-flex order-actions">';
+                                    if($item->is_lock == 0){
+                                        $output .= ' <a href="/users/block/'.$item -> id.'" class="ms-3 size_button_action" onclick="if (!window.confirm(\'Bạn có chắc chắn muốn  khoá tài khoản này?\')) return false;"><i class="bx bx-block"></i></a>';
+                                    }else{
+                                        $output .= ' <a href="/users/block/'.$item -> id.'" class="ms-3 size_button_action" onclick="if (!window.confirm(\'Bạn có chắc chắn muốn mở khoá tài khoản này?\')) return false;"><i class="bx bx-check"></i></a>';
+                                    }
+                                    '</td>
                             </tr>';
                         }
 
@@ -77,114 +152,60 @@ class UsersController extends Controller
 
     }
 
-    //API
 
-    public function create(Request $request)
-    {
-        $existingUser = users::where('uid', $request->uid)->first();
-        if ($existingUser) {
-            return response()->json(['message' => 'đăng nhập thành công với gg', 'user' => $existingUser], 200);
-        }
-        try{
-            $validatedData = $request->validate([
-                'uid' => 'required',
-                'name' => 'required',
-                'email' => 'required|email|unique:users',
-                'avatar' => 'nullable',
-                'password' => 'nullable',
-                'address' => 'nullable',
-                'phone_number' => 'nullable'
-
-            ]);
-
-            $user = new Users();
-            if($request->avatar ==''){
-                $user->avatar = 'storage/avatars/default.png';
-            }
-            $user->uid = $request->uid;
-            $user->name = $request->name ;
-            $user->email = $request->email;
-            $user->avatar = $request->avatar ?? 'storage/avatars/default.png';
-            $user->password = $request->password ?? '';
-            $user->address = $request->address ?? '';
-
-
-            $user -> save();
-            return response()->json(['message' => 'User created successfully', 'user' => $user], 200);
-
-        }catch(\Exception $e){
-            return response()->json(['message' => 'Error creating user', 'error' => $e->getMessage()], 400);
-        }
+    public function bam(Request $request){
+        $pass =  bcrypt($request ->pass);
+        return response()->json(['message' => 'User updated successfully', 'user' => $pass], 200);
     }
 
-
-
-    public function show(Request $request)
-    {
-
-            $profile = users::where('uid', $request->uid)->first();
-            $user = new Users();
-            $user -> uid = $profile->uid ;
-            $user -> name = $profile->name ;
-            $user -> email = $profile->email ;
-            $user -> avatar = $profile->avatar ;
-            if($profile->password != null){
-                $user -> password = $profile->password ;
-            } else {
-                $user -> password = '' ;
-            }
-            if( $profile->phone_number != null){
-                $user -> phone_number = $profile->phone_number ;
-            } else {
-                $user -> phone_number = '' ;
-
-            }
-            if ($profile->address != null){
-                $user -> address = $profile->address ;
-            } else {
-                $user -> address = '' ;
-            }
-
-            if ($profile) {
-                return response()->json(['message' => 'User fetched successfully', 'user' => $user], 200);
-            }
-            return response()->json(['message' => 'User not found'], 404);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request)
     {
         try{
-
-            $validatedData = $request->validate([
+             $request->validate([
                 'uid' => 'required',
                 'name' => 'nullable',
-                'avatar' => 'nullable',
+                'avatar' => 'nullable| image ',
                 'address' => 'nullable',
-                'phone_number' => 'nullable',
-                'email' => 'nullable | email',
-                'password' => 'nullable',
+                'phone_number' => 'nullable|min : 10|max : 10| regex:/^0[^0][0-9]{8}$/',
+                'email' => 'nullable|email|unique : users,email,'.$request->uid.',uid',
+                // 'password' => 'nullable',
+            ],[
+                'phone_number.regex' => 'Số điện thoại không hợp lệ',
+                'phone_number.min' => 'Số điện thoại không hợp lệ',
+                'phone_number.max' => 'Số điện thoại không hợp lệ',
+                'phone_number.required' => 'Số điện thoại không hợp lệ',
+                'email.email' => 'Email không hợp lệ',
+                'email.unique' => 'Email đã tồn tại',
+                'avatar.image' => 'Avatar không hợp lệ',
+            ]
+        );
 
-            ]);
-            $user = users::where('uid', $request->uid)->first();
-            $user->name = $request->name?? $user->name;
-            $user->address = $request->address ?? $user->address;
-            $user->phone_number = $request->phone_number?? $user->phone_number;
-            $user->password = $request->password ?? $user->password;
-            $user -> save();
+            $user = Users::where("uid", $request->uid)->first();
+            $user->name = $request->name;
+            $user->address = $request->address;
+            $user->phone_number = $request->phone_number;
+            $user->email = $request->email;
+            // $user->password = $request->password;
 
-            return response()->json(['message' => 'User updated successfully', 'user' => $user], 200);
-        }catch(\Exception $e){
-            return response()->json(['message' => 'Error updating user', 'error' => $e->getMessage()], 400);
+            if($request->avatar!= null){
+                $user->avatar = $request->avatar;
+                $filename = $user-> uid .'.' . $request->avatar->getClientOriginalExtension();
+                $path =  $request->avatar->storeAs('avatars', $filename, 'public');
+                $path = "storage/" . $path;
+                $user->avatar =  $path;
+            }
+
+            $user->save();
+
+            toastr()->success('Cập nhật tài khoản thành công');
+            return redirect()->route('admin.profile');
+            // return response()->json( 200);
+        } catch(\Exception $e) {
+            toastr()->error('Cập nhật tài khoản thất bại: ' . $e->getMessage());
+            return redirect()->route('admin.profile');
+            // return response()->json([ 'error' => $e->getMessage()], 400);
         }
     }
-
     public function update_avatar(Request $request)
     {
         try{
@@ -192,7 +213,7 @@ class UsersController extends Controller
                 'uid' => 'required',
                 'avatar' => 'required|image',
             ]);
-            $user = users::where('uid', $request->uid)->first();
+            $user = Users::where('uid', $request->uid)->first();
             if($request->avatar!= null){
                 $user->avatar = $request->avatar;
                 $filename = $user-> uid .'.' . $request->avatar->getClientOriginalExtension();
@@ -202,12 +223,14 @@ class UsersController extends Controller
             }
 
             $user -> save();
+            toastr()->success('Cập nhật avatar thành công');
+            // return redirect()->route('admin.profile');
             return response()->json(['message' => 'Avatar updated successfully', 'user' => $user], 200);
         }catch(\Exception $e){
+            toastr()->error('Cập nhật avatar thất bại: ' . $e->getMessage());
+            // return redirect()->route('admin.profile');
             return response()->json(['message' => 'Error updating avatar', 'error' => $e->getMessage()], 400);
         }
     }
-
-
 
 }

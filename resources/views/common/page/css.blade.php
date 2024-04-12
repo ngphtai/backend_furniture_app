@@ -26,6 +26,6 @@
 <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 
 <title>ANNT Store</title>
-
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
 

@@ -3,7 +3,7 @@
 
     <?php
     $product = DB::table('products')->where('id', $info )->first();
-    $product = App\Models\Products::with('promotion', 'category')->find($info );
+    $product = App\Models\Products::with('promotion', 'category','color')->find($info );
     $images = json_decode($product->product_image, true);
     use App\Models\Categories;
     use App\Models\Promotions;
@@ -53,6 +53,16 @@
                         </div>
                         <div>Số đánh giá </div>
                         <div class="text-success"><i class='bx bxs-cart-alt align-middle'></i> Số lượng mua</div>
+
+                        <?php
+                            use App\Models\Colors;
+
+                            $color_id = mb_substr($product->product_name, 5, 1);
+                            $color = Colors::find($color_id);
+
+                        ?>
+
+                        <div class="text-muted d-flex"><i class='bx bxs-palette align-middle'></i> <div style="background-color: #{{$color->color_name}};width:25px;height:25px;border-radius: 10px;"></div> </div>
                     </div>
                     <div class="mb-3 align-items-center d-flex">
                         <h2 class="price h4 col-md-4">

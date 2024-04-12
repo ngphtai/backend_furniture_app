@@ -11,6 +11,9 @@ class Carts extends Model
     protected $table = 'carts';
     protected $fillable = ['uid','products'];
 
+    protected $casts = [
+        'product' => 'json',
+    ];
     public function product()
     {
         return $this->belongsTo('App\Models\Products');

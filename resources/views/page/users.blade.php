@@ -15,12 +15,12 @@
     <div class="card">
         <div class="card-body">
             <div class="d-lg-flex align-items-center mb-4 gap-3">
-                <div class="position-relative">
-                    <input type="text" class="form-control ps-5 radius-30" name ="search" id = "search" placeholder="Tìm kiếm tài khoản" style="width: 600px;">
-                    <span class="position-absolute top-50 product-show translate-middle-y" ><i class="bx bx-search"></i></span>
-                </div>
-                {{-- button add ( cái hiển thị của nó là Add New Product--}}
-                <div class="ms-auto " data-bs-toggle="modal" data-bs-target="#adddProduct">
+            <div class="position-relative">
+                <input type="text" class="form-control ps-5 radius-30"  id="search" placeholder="Tìm kiếm tài khoản" style="width: 600px;">
+                <span class="position-absolute top-50 product-show translate-middle-y"><i class="bx bx-search"></i></span>
+            </div>
+            {{-- button add ( cái hiển thị của nó là Add New Product--}}
+            <div class="ms-auto" data-bs-toggle="modal" data-bs-target="#addUser">
                 <a class="btn btn-primary radius-30 mt-2 mt-lg-0"><i class="bx bxs-plus-square"></i>Thêm Tài Khoản Mới</a>
                 </div>
             </div>
@@ -50,6 +50,7 @@
                             {{-- lấy địa chỉ chính thôi mấy kia k cần đâu --}}
                             <th>Số Điện Thoại</th>
                             <th>Loại tài Khoản</th>
+                            <th>Trạng thái</th>
                             <th>Hoạt Động</th>
                         </tr>
                     </thead>
@@ -67,7 +68,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>{{$item -> uid}}</td>
+                            <td >{{ \Illuminate\Support\Str::limit($item->uid, 10, '...') }}</td>
                             <td>{{$item -> name ??  "trống"}}</td>
 
                             <td>
@@ -79,12 +80,33 @@
                             </td>
 
                             <td>{{$item -> email}}</td>
-                            <td>{{$item ->address ??  "trống"}}</td>
+                            <td>  @if($item -> address == null )
+                                    {{'trống'}}
+                                @else{
+                                    {{ Str::limit($item->address, 10, '') }}<br>
+                                    @if (strlen($item->address) > 10)
+                                    {{ Str::substr($item->address, 10) }}
+                                    @endif
+                                }
+                                @endif
+                            </td>
                             <td>{{$item -> phone_number ??  "trống"}}</td>
                             <td>{{$item -> user_type}}</td>
                             <td>
+                                @if($item ->is_lock == 0)
+                                    <span class="badge bg-success">Hoạt Động</span>
+                                @else
+                                    <span class="badge bg-danger">Khoá</span>
+                                @endif
+                            </td>
+                            <td>
                                 <div class="d-flex order-actions">
-                                    <a href= "{{url('users/delete',$item->id)}}"class="ms-3 size_button_action" onclick=" return confirm('Bạn có chắc chắn muốn xoá?')"><i class="bx bxs-trash"></i></a>
+                                    @if($item->is_lock == 0)
+                                        <a href="{{url('users/block',$item->id)}}" class="ms-3 size_button_action" onclick="return confirm('Bạn có chắc chắn muốn khoá tài khoản này?')"><i class="bx bx-block"></i></a>
+                                    @else
+                                        <a href="{{url('users/block',$item->id)}}" class="ms-3 size_button_action" onclick="return confirm('Bạn có chắc chắn muốn mở khoá tài khoản này?')"><i class="bx bx-check"></i></a>
+                                    @endif
+                                </div>
                                 </div>
                             </td>
                         </tr>
@@ -93,42 +115,46 @@
                     </tbody>
                 </table>
             </div>
-            <!-- Add New Product -->
-            <div class="modal fade" id="adddProduct" tabindex="-1" aria-labelledby="adddProduct" aria-hidden="true">
+            <!-- Add New User -->
+            <div class="modal fade" id="addUser" tabindex="0" aria-labelledby="addUser" aria-hidden="true">
                 <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="adddProduct"></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" >Thêm Khuyến Mãi</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                                <form name="addForm"  action ='{{route('user.store')}}' method="POST"  enctype="multipart/form-data">
+                                    @csrf
+                                    <?php $uid = rand(10000,99990)?>
+                                    <input type="hidden" id="uid" name="uid" value="{{$uid}}">
+                                    <div class="mb-3">
+                                        <label class="form-label" for= "name">Họ Và Tên</label>
+                                        <input  type="text" name="name"  id ="name"   class="form-control" placeholder="Nhập vào họ và tên *" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" for="email">Email</label>
+                                        <input type="email"   name="email"  id ="email" class="form-control" placeholder="Nhập vào email *" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" for="password">Mật Khẩu</label>
+                                        <input type="password" name ="password" id="password" class="form-control" placeholder="Nhập vào mật khẩu *" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" for="user_type">Loại tài khoản</label>
+                                        <select class="form-select" name="user_type" id="user_type">
+                                            <option value="Admin">Admin</option>
+                                            <option value="Staff">Staff</option>
+                                            <option value="User">User</option>
+                                        </select>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button  type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                        <button  type="submit" id="btn-add-user" class="btn btn-primary">Thêm mới</button>
+                                    </div>
+                                </form>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        <form action="#" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            <div class="mb-3">
-                                <label class="form-label">Họ Và Tên</label>
-                                <input  type="text" class="form-control" placeholder="Nhập vào họ và tên *">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Email</label>
-                                <input type="email" class="form-control" placeholder="Nhập vào email *">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Mật Khẩu</label>
-                                <input type="password" class="form-control" placeholder="Nhập vào mật khẩu *">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Loại tài khoản</label>
-                                <select class="form-select" aria-label="Default select example">
-                                    <option selected>Chọn loại tài khoản</option>
-                                    <option value="1">Admin</option>
-                                    <option value="2">User</option>
-                                </select>
-                    </div>
-                    <div class="modal-footer">
-                        <button  type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                        <button  type="submit" id="btn-add-user" class="btn btn-primary">Thêm mới</button>
-                    </div>
-                </div>
                 </div>
             </div>
         </div>
@@ -161,25 +187,30 @@
             });
         });
 
-    $('#btn-add-user').click(function(){
-        var name = $('#name').val();
-        var email = $('#email').val();
-        var password = $('#password').val();
-        var user_type = $('#user_type').val();
-        $.ajax({
-            url:"{{route('user.store')}}",
-            type:"POST",
-            data:{
-                name:name,
-                email:email,
-                password:password,
-                user_type:user_type,
-                _token:"{{csrf_token()}}"
-            },
-            success:function(data){
-                alert(data);
-            }
-        });
-    });
+    // $('#addUser').on('click','#btn-primary',function(e){
+    //     e.preventDefault();
+    //     var name = $('#name').val();
+    //     var email = $('#email').val();
+    //     var password = $('#password').val();
+    //     var user_type = $("#user_type").val();
+
+    //     $.ajax({
+    //     url:'{{route('user.store')}}',
+    //     type:"POST",
+    //     data:{
+    //         name: name,
+    //         email: email,
+    //         password: password,
+    //         user_type: user_type
+    //     },
+    //     success:function(data){
+    //         toastr.success(data.message);
+    //         $('#addUser').modal('hide');
+    //     },
+    //     error:function(data){
+    //         toastr.error(data.message);
+    //         }
+    //     });
+    // });
 </script>
 @endsection

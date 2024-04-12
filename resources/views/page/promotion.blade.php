@@ -94,7 +94,7 @@
                 </div>
 
 
-                <!-- Add New Product -->
+                <!-- Add New promotion -->
                 <div class="modal fade" id="addPromotion" tabindex="0" aria-labelledby="addPromotion" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">

@@ -15,6 +15,11 @@ class PromotionsController extends Controller
         $result['info'] = DB::table('promotions')->get()->toArray();
         return view('page.promotion', $result);
     }
+    public function edit(Request $request)
+    {
+        $promotion = Promotions::where('id', $request->id)->first();
+        return response()->json($promotion, 200);
+    }
 
 
     public function store(Request $request)
@@ -80,7 +85,6 @@ class PromotionsController extends Controller
     }
 
     // search by name
-
     public function search(Request $request){
         $output ="";
         $stt = 1;
@@ -133,9 +137,9 @@ class PromotionsController extends Controller
     }
 
     //API
-    public function show(string $id)
+    public function showAll()
     {
-        $request = Promotions::findOrFail($id);
+        $request = Promotions::all();
         return response() -> json($request, 200) ;
     }
 

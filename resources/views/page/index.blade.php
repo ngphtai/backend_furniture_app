@@ -1,6 +1,6 @@
 @extends('common.page.Master')
 @section('noi_dung')
-
+{{-- dash boarh --}}
 <div class="wrapper">
 
     <!--start page wrapper -->

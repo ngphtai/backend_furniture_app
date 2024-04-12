@@ -26,6 +26,11 @@ class CategoriesController extends Controller
      */
     public function store(Request $request)
     {
+            $user = auth()->guard('ANNTStore')->user();
+            if($user->user_type != 'Admin'){
+                toastr()->error("Tài khoản không có quyền thực hiện chức năng này!");
+                return response()->json(['status' => 200]);
+            }
             $request->validate([
                 'name' => 'required',
                 'image' => 'required|image',
@@ -60,6 +65,11 @@ class CategoriesController extends Controller
 
     public function update(String $id,Request $request ) // Hành động này thực hiện việc cập nhật dữ liệu trong cơ sở dữ liệu dựa trên dữ liệu mà người dùng đã chỉnh sửa trong biểu mẫu hoặc giao diện
     {
+            $user = auth()->guard('ANNTStore')->user();
+            if($user->user_type != 'Admin'){
+                toastr()->error("Tài khoản không có quyền thực hiện chức năng này!");
+                return response()->json(['status' => 200]);
+            }
 
             $request->validate([
                 // 'id' => 'required',
@@ -98,7 +108,11 @@ class CategoriesController extends Controller
      */
     public function destroy(string $id)
     {
-
+        $user = auth()->guard('ANNTStore')->user();
+            if($user->user_type != 'Admin'){
+                toastr()->error("Tài khoản không có quyền thực hiện chức năng này!");
+                return redirect()->route('category.index');
+            }
             $category = Categories::findOrFail($id);
 
             // Xóa category
