@@ -20,6 +20,10 @@ class ProductsController extends Controller
         $result['colors'] = DB::table('colors')->get()->toArray();
         return view('page.product')-> with($result);
     }
+    public function detail1(Request $request){
+        $product = Products::where("id",$request ->id)->first();
+        return response()->json( $product, 200);
+    }
 
     // display product detail
     public function detail($id)
@@ -318,6 +322,93 @@ class ProductsController extends Controller
             $product->product_image = json_decode($product->product_image);
         }
         return response()-> json(['products' => $products],200);
+    }
+
+    public function search(Request $request){
+
+        $request ->validate(
+            [
+                    'category_id' => 'nullable|integer',
+                    'product_name' => 'nullable|string',
+                    'rating_count' => 'nullable ',
+                    'price_min' => 'nullable|numeric ',
+                    'price_max' => 'nullable|numeric',
+                    'type' => 'nullable|string'
+                ]
+        );
+
+
+
+        $productRequest= Products::query()->where('is_show','=', 1);
+
+        if (!empty($request->category_id)) {
+            $productRequest->where('category_id','=', $request->category_id);
+
+        }
+        if (!empty($request->product_name) ){
+             $productRequest->where('product_name', 'like', '%'. $request->product_name.'%');
+
+        }
+
+        //sai
+        if (!empty($request->rating_count)) {
+             $productRequest->where('rating_count','>=', $request->rating_count);
+
+        }
+
+
+        if (!empty($request->price_min)) {
+              $productRequest->where('price', '>=', $request->price_min);
+
+        }
+
+        if (!empty($request->price_max)) {
+             $productRequest->where('price', '<=', $request->price_max);
+
+        }
+
+
+
+
+        if (!empty($request->type)) {
+            switch ($request->type) {
+            case 'asc':
+                $productRequest->orderBy('price','asc');
+                break;
+            case 'desc':
+                $productRequest->orderBy('price','desc');
+                break;
+            }
+        }
+
+        //handle data to transform data
+        function handledata($products)
+        {
+            foreach ($products as $item) {
+                $promotion = Promotions::where("id", $item->promotion_id)->first();
+                if (empty($promotion)) {
+                    $item->promotion_id = 0;
+                } else {
+                    if (time() > strtotime($promotion->start_date) && time() < strtotime($promotion->end_date)) {
+                        $item->promotion_id = $promotion->discount;
+                    } else {
+                        $item->promotion_id = 0;
+                    }
+                }
+                //lấy màu của sản phẩm và đưa vào biến color_name
+                $color_id = mb_substr($item->product_name, 5, 1);
+                $color = Colors::where('id',$color_id)->first();
+                $color = $color->color_name;
+                $item-> color_name = $color;
+                $item->product_image = json_decode($item->product_image);
+            }
+            return response()->json([ 'products' => $products], 200);
+        }
+
+        $products = $productRequest->get();
+
+        return $products->isEmpty() ? response()->json(['products' => []], 200) : handledata($products);
+
     }
 
 

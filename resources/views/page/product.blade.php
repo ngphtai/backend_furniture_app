@@ -207,7 +207,12 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-
+{{-- <!--start overlay-->
+<div class="overlay toggle-icon"></div>
+<!--end overlay-->
+<!--Start Back To Top Button-->
+<a href="javaScript:;" class="back-to-top"><i class='bx bxs-up-arrow-alt'></i></a>
+<!--End Back To Top Button--> --}}
 
 <script>
     //search
@@ -303,10 +308,10 @@
         });
     })
 </script> --}}
-
+{{--
 <script>
     if (window.location.protocol !== "https:") {
       window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
     }
-  </script>
+  </script> --}}
 @endsection

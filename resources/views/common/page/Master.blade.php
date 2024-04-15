@@ -56,7 +56,7 @@
 						</div>
 						<div class="menu-title">Categories</div>
 					</a>
-                    <a href="/categories/index" >
+                    <a href="/orders/index" >
 						<div class="parent-icon"><i class="bx bx-spreadsheet"></i>
 						</div>
 						<div class="menu-title">Orders</div>

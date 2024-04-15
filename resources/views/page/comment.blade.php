@@ -243,6 +243,7 @@
 
 <script>
     $(document).ready(function(){
+
         $('.list_key').hide();
         $('#search').on('keyup',function(){
             var value = $(this).val();
@@ -262,6 +263,7 @@
 
         $('#add_keyword_form').on('submit', function(e){
             e.preventDefault();
+            alert('submit');
             var form = $(this);
             var url = form.attr('action');
             var type = form.attr('method');

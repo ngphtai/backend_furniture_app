@@ -6,41 +6,77 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Orders;
 use Illuminate\Support\Facades\Redirect;
-
+use Carbon\Carbon;
+use App\Models\Products;
 class VnpayController extends Controller
 {
     public function pay(Request $request)
     {
-        // bổ sung thông tin người dùng vào đây
+        $products = [
+            ['product_id' => 82, 'quantity' => 2],
+            ['product_id' => 83, 'quantity' => 3],
+          ];
+        $total_price = 0;
+        //with array product
+        foreach($products as $item){ // test
+            $product_id = $item['product_id'];
+            $product = Products::where('id',"=", $product_id)->first();
+            if(empty($product)){
+                return response()->json(['message' => 'Product not found'], 404);
+            }
+            if( $item['quantity'] > $product->quantity){
+                return response()->json(['message' => 'Product not enough quantity'], 404);
+            }
+            $total_price += $product->price * $item['quantity'];
+        }
 
-        $request->validate(
-            [
-                'id' => 'required',
-                'TotalPrice' => 'required',
-            ],
-            [
-                'id.required' => 'id không được để trống',
-                'TotalPrice.required' => 'TotalPrice không được để trống',
-            ]
-            );
+        $oderMap =[];
+        $oderMap['products'] = json_encode($products); //test
+        $orderMap['user_id'] = $request->user_id;
+        $orderMap['total_price'] = $total_price;
+        $orderMap['email'] = $request->email;
+        $orderMap['phone'] = $request->phone;
+        $orderMap['address'] = $request->address;
+        $oderMap['status'] = 1;
 
+        $orderRes = Orders::where($oderMap)->first();
+
+        if(!empty($orderRes)){
+           return response()->json(['message' => 'Order is available!!'], 404);
+        }
+
+            $map = [] ;
+            $map['user_id'] = $request->user_id;
+            $map['total_price'] = $total_price;
+            $map['products'] = json_encode($products);//test
+            $map['address'] = $request->address;
+            $map['phone'] = $request->phone;
+            $map['name'] = $request->name;
+            $map['type_payment'] = "vnpay";
+            $map['status'] = 0;
+            $map['note'] = $request->note;
+            $map['is_done'] = 0;
+            $map['created_at'] = Carbon::now();
+
+            $order_id = Orders::insertGetId($map);
+            $TotalPrice = $total_price;
 
         error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
         date_default_timezone_set('Asia/Ho_Chi_Minh');
         $vnp_TmnCode = "S4SMEJK5"; //Website ID in VNPAY System
         $vnp_HashSecret = "EAORGNSLPZWOCEUQVZWUFEYIMQTOFTNR"; //Secret key
         $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        $vnp_Returnurl = " https://9f67-103-156-58-124.ngrok-free.app/api/vnpay-return";
+        $vnp_Returnurl = " https://a446-2402-800-62ee-c76a-f1bb-1484-c00d-bcca.ngrok-free.app/api/vnpay-return";  // URL nhan ket qua tra ve
         $vnp_apiUrl = "http://sandbox.vnpayment.vn/merchant_webapi/merchant.html";
         //Config input format
         //Expire
         $startTime = date("YmdHis");
         $expire = date('YmdHis', strtotime('+15 minutes', strtotime($startTime)));
 
-        $vnp_TxnRef = $request->id; //Mã đơn hàng. Trong thực tế Merchant cần insert đơn hàng vào DB và gửi mã này sang VNPAY
+        $vnp_TxnRef = $order_id; //Mã đơn hàng. Trong thực tế Merchant cần insert đơn hàng vào DB và gửi mã này sang VNPAY
         $vnp_OrderInfo = 'Thanh toán đơn hàng ';
         $vnp_OrderType = 'billpayment';
-        $vnp_Amount = $request->TotalPrice * 100;
+        $vnp_Amount = $TotalPrice * 100;
         $vnp_Locale = 'vn';
         $vnp_BankCode = '';
         $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
@@ -140,22 +176,49 @@ class VnpayController extends Controller
         $vnp_TxnRef = $request->input('vnp_TxnRef');
 
         if ($vnp_ResponseCode == '00') {
-            $invoice = Orders::find($vnp_TxnRef);
-            //cập nhật dữ liệu đơn hàng
+            $order = Orders::find($vnp_TxnRef);
+            $order->status = 1;
+            $order->updated_at = Carbon::now();
+            $order->products = json_decode($order->products);
+            foreach($order->products as $product){
 
-            // $invoice->IsPaid = true;
-            // $invoice->save();
-            return Redirect::to('{{DB_HOST}}:3000/orders/details/success' . $vnp_TxnRef);
+                $product_id = $product['product_id'];
+                $quantity = $product['quantity'];
+
+                $product = Products::where('id', $product_id)->first();
+
+                $product->quantity -= $quantity;
+                $product->sold += $quantity;
+                $product->save();
+            }
+
+            $order->save();
+            return Redirect::to('{{DB_HOST}}:3000/orders/details/success/' . $vnp_TxnRef);
         } else {
-            $invoice = Orders::find($vnp_TxnRef);
-            //cập nhật dữ liệu đơn hàng
+            $order = Orders::find($vnp_TxnRef);
+            //xoá order
+            $order->delete();
 
-            // $invoice->IsPaid = false;
-            // $invoice->MethodPay = 1;
-            // $invoice->save();
             return Redirect::to('{{DB_HOST}}:3000/orders/details/failed' )-> with('error', 'Thanh toán thất bại');
         }
 
         return Redirect::to('{{DB_HOST}}:3000/orders/details/' . $vnp_TxnRef);
+    }
+
+    public function totalPrice(){
+        $orders = Orders::all();
+        $total_price = 0;
+        foreach($orders as $item){
+            $total_price = 0;
+            $products = json_decode($item->products);
+            foreach($products as $product){
+                $product_id = $product->product_id;
+                $quantity = $product->quantity;
+                $product = Products::where('id', $product_id)->first();
+                $total_price += $product->price * $quantity;
+            }
+            $item->total_price = $total_price;
+        }
+        return $total_price;
     }
 }

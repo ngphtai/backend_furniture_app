@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DemoController;
 use App\Http\Controllers\Api\ProductsController;
 use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\Api\PromotionsController;
@@ -10,7 +9,8 @@ use App\Http\Controllers\testController;
 use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\Api\CommentsController;
 use App\Http\Controllers\Api\ColorsController;
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Api\OrdersController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -31,6 +31,7 @@ Route::group(['middleware'=> 'checkAdminLogin' ],function () {
 
 
     Route::get('/admin/profile', [UsersController::class, 'profile'])->name('admin.profile');
+    Route::post('/admin/profile', [UsersController::class, 'profile'])->name('admin.profile');
 
     Route::group(['prefix' => '/promotions'], function () {
         Route::get('/index', [PromotionsController::class, 'index'])->name('promotion.index');
@@ -58,7 +59,6 @@ Route::group(['middleware'=> 'checkAdminLogin' ],function () {
         Route::post('/store', [UsersController::class, 'addNewUser'])->name('user.store');
         Route::get('/block/{id}', [UsersController::class, 'block']);
         Route::post('/update', [UsersController::class, 'update'])->name('user.update');
-        Route::post('/update_avatar', [UsersController::class, 'update_avatar'])->name('user.update_avatar');
     });
 
     Route::group(['prefix' => '/products'], function () {
@@ -83,6 +83,14 @@ Route::group(['middleware'=> 'checkAdminLogin' ],function () {
     Route::group(['prefix' => '/colors'], function () {
         Route::post('/add', [ColorsController::class, 'add'])->name('color.add');
         Route::get('/edit', [ColorsController::class, 'edit'])->name('color.edit');
+    });
+
+    Route::group(['prefix'=> '/orders'], function(){
+        Route::get('/index', [OrdersController::class, 'index'])->name('order.index');
+        Route::get('/search', [OrdersController::class, 'search'])->name('order.search');
+        Route::get('/detail', [OrdersController::class, 'show'])->name('order.detail');
+        Route::get('product/detail1', [ProductsController::class, 'detail1'])->name('product.detail1');
+        Route::post('/updatedone', [OrdersController::class, 'updatedone'])->name('order.update-is-done');
     });
 
 });

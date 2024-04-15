@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\NotificationsController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\VnpayController;
 use App\Http\Controllers\Api\InforUsersController;
+use App\Http\Controllers\Api\OrdersController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -38,9 +39,6 @@ Route::post('/promotions/all', [PromotionsController::class, 'showAll']); // k c
 Route::post('/products/all', [ProductsController::class, 'all']);
 Route::post('/products/show', [ProductsController::class, 'show']); // detail product
 Route::post('/products/search', [ProductsController::class, 'search']);
-// Route::post('/products/categoryId', [ProductsController::class, 'showByCategory']);
-// Route::post('/products/update/{id}',[ProductsController::class,'update']);
-// update product khi order  xong thì cập nhật lại số lượng sp,sl bán , sau khi xác nhận thành công thì cập nhật lại
 
 //user
 Route::post('/users/update_avatar', [InforUsersController::class, 'update_avatar']);
@@ -48,18 +46,20 @@ Route::post('/users/create', [InforUsersController::class, 'create']);
 Route::post('/users/profile', [InforUsersController::class, 'show']);
 Route::post('/users/update_profile', [InforUsersController::class, 'update']);
 Route::post('/users/checklock', [InforUsersController::class, 'checklock']);
-Route::get('bam', [UsersController::class, 'bam']);
+// Route::get('bam', [UsersController::class, 'bam']);
 
 //cart
-Route::post('/carts/create', [CartController::class, 'addToCart']);
+// Route::post('/carts/add', [CartController::class, 'add']);
+Route::post('/carts/add', [CartController::class, 'addToCart']);
 Route::post('/carts/update', [CartController::class, 'update']);
-Route::post("/carts/delete", [CartController::class, 'delete']);
-Route::get('/carts/show/', [CartController::class, 'get']);
+Route::post('/carts/show/', [CartController::class, 'get']);
+Route::post('/carts/delete/', [CartController::class, 'delete']);
+Route::post('/carts/checkout', [CartController::class, 'afterCheckout']);
+
 
 //comment
 Route::post('/comments/create', [CommentsController::class, 'create']);
 Route::post('/comments/show/', [CommentsController::class, 'show']);
-Route::post('/comments/addkey', [CommentsController::class, 'addForbiddeneywords']);
 Route::post('/comments/delete/', [CommentsController::class, 'delete']);
 
 
@@ -77,5 +77,9 @@ Route::Any('cancel', [PaymentController::class, 'cancel']);
 
 Route::any('vnpay-return', [VnpayController::class, 'vnpayReturn']);
 Route::post('payment-vnpay', [VnpayController::class, 'pay']);
+Route::get('test', [VnpayController::class, 'totalPrice']); // test for total price order
 
 
+//Orders
+Route::get('/orders/all', [OrdersController::class, 'all']);
+Route::post('/orders/show/', [OrdersController::class, 'updatedone']);

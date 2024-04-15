@@ -160,77 +160,59 @@ class UsersController extends Controller
 
     public function update(Request $request)
     {
-        try{
-             $request->validate([
+        try {
+            $request->validate([
                 'uid' => 'required',
                 'name' => 'nullable',
-                'avatar' => 'nullable| image ',
+                'file' => 'nullable| image| mimes:jpeg,png,jpg,gif,wepb',
                 'address' => 'nullable',
-                'phone_number' => 'nullable|min : 10|max : 10| regex:/^0[^0][0-9]{8}$/',
-                'email' => 'nullable|email|unique : users,email,'.$request->uid.',uid',
+                'phone_number' => 'nullable|min:10|max:10|regex:/^0[^0][0-9]{8}$/',
+                'email' => 'nullable|email|unique:users,email,' . $request->uid . ',uid',
                 // 'password' => 'nullable',
-            ],[
+            ], [
                 'phone_number.regex' => 'Số điện thoại không hợp lệ',
                 'phone_number.min' => 'Số điện thoại không hợp lệ',
                 'phone_number.max' => 'Số điện thoại không hợp lệ',
                 'phone_number.required' => 'Số điện thoại không hợp lệ',
                 'email.email' => 'Email không hợp lệ',
                 'email.unique' => 'Email đã tồn tại',
-                'avatar.image' => 'Avatar không hợp lệ',
-            ]
-        );
+                'file.image' => 'Avatar không hợp lệ',
+            ]);
 
             $user = Users::where("uid", $request->uid)->first();
+            if (!$user) {
+                throw new \Exception('User not found');
+            }
+
             $user->name = $request->name;
             $user->address = $request->address;
             $user->phone_number = $request->phone_number;
             $user->email = $request->email;
             // $user->password = $request->password;
 
-            if($request->avatar!= null){
-                $user->avatar = $request->avatar;
-                $filename = $user-> uid .'.' . $request->avatar->getClientOriginalExtension();
-                $path =  $request->avatar->storeAs('avatars', $filename, 'public');
+            if ($request->file != null) {
+                // Delete old avatar
+                if ($user->avatar != 'storage/avatars/default.png') {
+                    $oldAvatar = str_replace('storage/', '', $user->avatar);
+                    Storage::disk('public')->delete($oldAvatar);
+                }
+                $filename = $user->uid . '.' . $request->file->getClientOriginalExtension();
+                $path = $request->file->storeAs('avatars', $filename, 'public');
                 $path = "storage/" . $path;
-                $user->avatar =  $path;
+                $user->avatar = $path;
             }
 
             $user->save();
 
             toastr()->success('Cập nhật tài khoản thành công');
             return redirect()->route('admin.profile');
-            // return response()->json( 200);
-        } catch(\Exception $e) {
+            // return response()->json(['user' => $user], 200);
+        } catch (\Exception $e) {
             toastr()->error('Cập nhật tài khoản thất bại: ' . $e->getMessage());
             return redirect()->route('admin.profile');
-            // return response()->json([ 'error' => $e->getMessage()], 400);
+            // return response()->json(['error' => $e->getMessage()], 400);
         }
     }
-    public function update_avatar(Request $request)
-    {
-        try{
-            $validatedData = $request->validate([
-                'uid' => 'required',
-                'avatar' => 'required|image',
-            ]);
-            $user = Users::where('uid', $request->uid)->first();
-            if($request->avatar!= null){
-                $user->avatar = $request->avatar;
-                $filename = $user-> uid .'.' . $request->avatar->getClientOriginalExtension();
-                $path =  $request->avatar->storeAs('avatars', $filename, 'public');
-                $path = "storage/" . $path;
-                $user->avatar =  $path;
-            }
 
-            $user -> save();
-            toastr()->success('Cập nhật avatar thành công');
-            // return redirect()->route('admin.profile');
-            return response()->json(['message' => 'Avatar updated successfully', 'user' => $user], 200);
-        }catch(\Exception $e){
-            toastr()->error('Cập nhật avatar thất bại: ' . $e->getMessage());
-            // return redirect()->route('admin.profile');
-            return response()->json(['message' => 'Error updating avatar', 'error' => $e->getMessage()], 400);
-        }
-    }
 
 }

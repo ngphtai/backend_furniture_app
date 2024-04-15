@@ -12,7 +12,7 @@ class Carts extends Model
     protected $fillable = ['uid','products'];
 
     protected $casts = [
-        'product' => 'json',
+        'products' => 'json',
     ];
     public function product()
     {
