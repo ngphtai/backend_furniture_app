@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\Api\CommentsController;
 use App\Http\Controllers\Api\ColorsController;
 use App\Http\Controllers\Api\OrdersController;
+use App\Http\Controllers\PdfController;
 
 /*
 |--------------------------------------------------------------------------
@@ -90,7 +91,10 @@ Route::group(['middleware'=> 'checkAdminLogin' ],function () {
         Route::get('/search', [OrdersController::class, 'search'])->name('order.search');
         Route::get('/detail', [OrdersController::class, 'show'])->name('order.detail');
         Route::get('product/detail1', [ProductsController::class, 'detail1'])->name('product.detail1');
-        Route::post('/updatedone', [OrdersController::class, 'updatedone'])->name('order.update-is-done');
+        Route::any('/updatedone', [OrdersController::class, 'updatedone'])->name('order.update-is-done');
+        Route::get('/toPDF/{id}', [OrdersController::class, 'toPDF'])->name('order.toPDF');
     });
-
+    Route::get('/generate-pdf', [PdfController::class, 'generatePDF'])-> name('generate-pdf');
 });
+
+Route::get('/test', [PdfController::class, 'index']);

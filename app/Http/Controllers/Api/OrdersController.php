@@ -36,10 +36,20 @@ class OrdersController extends Controller
     {
         $order = Orders::where('id', $request->id)->first();
         $order -> is_done ++;
+        if($order -> type_payment == "direct" && $order -> is_done == 3)
+            $order -> status = 1;
+
         $order->save();
 
         toastr()-> success('Cập nhật thành công tình trạng sản phẩm');
         return response()->json(['message' => 'Update success'], 200);
+    }
+
+    public function toPDF(String $id){
+        $orders = Orders::where('id', $id)->first();
+        $orders-> email = DB::table('users')->where('id', $orders->user_id)->first()->email;
+
+        return view('page.pdf', compact('orders'));
     }
 
 }

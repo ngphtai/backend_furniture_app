@@ -23,12 +23,11 @@ use Illuminate\Support\Facades\DB;
 class PaymentController extends Controller
 {
     public function checkout(Request $request){
-        try{
 
         Stripe::setApiKey("sk_test_51P2UjyAPHtNagExbA9nGuoC0h27gTg6QrvxZMATX4sokQKSFm5LsI0NOyTV88MuzMTS5VYplHw2WrAaDx5hY6D8j0023bMUQ1r");
 
         $products = [
-            ['product_id' => 82, 'quantity' => 2],
+            ['product_id' => 70, 'quantity' => 2],
             ['product_id' => 83, 'quantity' => 2],
           ];
         $total_price = 0;
@@ -114,12 +113,7 @@ class PaymentController extends Controller
             ]);
 
 
-        }catch(\Throwable $th){
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 500);
-        }
+
     }
 
     public function success(){
@@ -227,13 +221,16 @@ class PaymentController extends Controller
         $products = json_decode($products, true);
         foreach ($products as $detail) {
           $product = Products::find($detail['product_id']);
-          $product_image = json_decode($product->image)[0];
+        if (!is_null($product->image)) {
+            $product_image = json_decode($product->image[0]);
+        } else {
+            $product_image = null;
+        }
           $lineItems[] = [
             'price_data' => [
               'currency' => 'vnd',
               'product_data' => [
                 'name' => $product->product_name,
-                'image' =>$product_image,
                 'description' => $product->description,
               ],
               'unit_amount' => intval($product->price * 1000), // Chuyển đổi sang integer in cents
@@ -272,7 +269,7 @@ class PaymentController extends Controller
                     //cập nhật lại tổng số lượng sản phẩm trong giỏ hàng
                     $prod->totalItems -= $item->quantity;
                     //cập nhật lại tổng tiền
-                    $prod->total -= $item->price * $item->quantity;
+                    $prod->total -= $item->dicountPrice * $item->quantity;
                     // xoá sản phẩm trong cart
                     array_splice($prod->items, $key, 1);
                     $cart->products = json_encode($prod);

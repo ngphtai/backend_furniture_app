@@ -75,8 +75,9 @@
                                 <td><div type="button" class="detail-btn btn btn-primary btn-sm radius-30 px-4" id={{$item->id}} data-bs-toggle="modal" data-bs-target="#viewDetails">Xem chi tiết</div></td>
                                 <td>
                                     <div class="d-flex order-actions">
-                                        <a href="javascript:;" class=""><i class='bx bxs-file-export'></i></a>
-                                        <a href="javascript:;" class="ms-3"><i class='bx bx-check'></i></a>
+                                        <a href="{{ 'toPDF/'. $item ->id}}" class=""><i class='bx bxs-file-export'></i></a>
+                                        {{-- <a href="{{ route('order.update-is-done', ['id' => $item->id]) }}" onclick="return confirm('Bạn có chắc chắn muốn cập nhật tình trạng sản phẩm?')" class="ms-3"><i class='bx bx-check'></i></a> --}}
+                                    </div>
                                     </div>
                                 </td>
                             </tr>
@@ -180,8 +181,8 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-warning px-5 radius-30" data-bs-dismiss="modal"><i class ="bx bxs-file-export "></i> Xuất file PDF</button>
-                            <button type="submit" id = "editOrder"  form="editPromotionForm" class="btn btn-success px-5 radius-30"  onclick="return confirm('Bạn có chắc chắn muốn cập nhật tình trạng sản phẩm?')" >Cập nhật</button>
+                            <button type="button" id = "toPDF" class="btn btn-warning px-5 radius-30" data-bs-dismiss="modal"><i class="bx bxs-file-export"></i> Xuất file PDF</button>
+                            <button type="submit" id = "editOrder"   class="btn btn-success px-5 radius-30"  >Cập nhật</button>
                         </div>
                     </div>
                 </div>
@@ -288,6 +289,9 @@
         $.ajaxSetup({ headers: { 'X-CSRF-TOKEN' : '{{ csrf_token() }}' } });
         $('#editOrder').click(function(){
             var id = $('#id').text();
+            if (!confirm('Bạn có chắc chắn muốn cập nhật tình trạng sản phẩm?')) {
+                return;
+            }
             $.ajax({
                 type: 'post',
                 url: '{{route('order.update-is-done')}}',
@@ -302,6 +306,15 @@
                     console.log(xhr.responseText);
                 }
             });
+        });
+    });
+
+</script>
+<script>
+    $(document).ready(function(){
+        $('#toPDF').click(function(){
+            var id = $('#id').text();
+            window.location.href = '/orders/toPDF/' + id;
         });
     });
 </script>
