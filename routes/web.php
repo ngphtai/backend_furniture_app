@@ -87,14 +87,25 @@ Route::group(['middleware'=> 'checkAdminLogin' ],function () {
     });
 
     Route::group(['prefix'=> '/orders'], function(){
-        Route::get('/index', [OrdersController::class, 'index'])->name('order.index');
+        Route::get('/index/v0', [OrdersController::class, 'index'])->name('order.index');
+        Route::get('/index/v1', [OrdersController::class, 'index_1'])->name('order.index.v1');
+        Route::get('/index/v2', [OrdersController::class, 'index_2'])->name('order.index.v2');
+        Route::get('/index/v3', [OrdersController::class, 'index_3'])->name('order.index.v3');
+        Route::get('/index/v4', [OrdersController::class, 'index_4'])->name('order.index.v4');
+        Route::get('/index/v5', [OrdersController::class, 'index_5'])->name('order.index.v5');
+        Route::get('/index/v6', [OrdersController::class, 'index_6'])->name('order.index.v6');
+
         Route::get('/search', [OrdersController::class, 'search'])->name('order.search');
         Route::get('/detail', [OrdersController::class, 'show'])->name('order.detail');
         Route::get('product/detail1', [ProductsController::class, 'detail1'])->name('product.detail1');
-        Route::any('/updatedone', [OrdersController::class, 'updatedone'])->name('order.update-is-done');
+        Route::any('/updatenextdone', [OrdersController::class, 'updatedone'])->name('order.update-next-is-done');
+        Route::any('/updateretreatdone', [OrdersController::class, 'updateretreatdone'])->name('order.update-retreat-is-done');
+        Route::any('/updateOrder', [OrdersController::class, 'updateIsDone'])->name('order.updateOrder');
+
         Route::get('/toPDF/{id}', [OrdersController::class, 'toPDF'])->name('order.toPDF');
     });
     Route::get('/generate-pdf', [PdfController::class, 'generatePDF'])-> name('generate-pdf');
 });
 
 Route::get('/test', [PdfController::class, 'index']);
+

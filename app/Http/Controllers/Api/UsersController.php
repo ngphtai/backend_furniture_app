@@ -51,7 +51,7 @@ class UsersController extends Controller
             $user->save();
 
             toastr()->success('Thêm tài khoản thành công');
-            return redirect()->route('users.index');
+            return redirect()->route('user.index');
 
         } catch (\Exception $e) {
             toastr()->error('Thêm tài khoản thất bại: ' . $e->getMessage());

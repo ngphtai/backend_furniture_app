@@ -2,6 +2,7 @@
 @section('noi_dung')
 
 <div class="page-content">
+
     <!--breadcrumb-->
     <div class="ps-3">
         <nav aria-label="breadcrumb">
@@ -71,14 +72,29 @@
                             </td>
                             <td>{{
                                 // optional($item->user)->name
-                                $item -> user_id
+                                $item ->user->name
                             }}</td>
                             <td>{{$item -> order_id}}</td>
-                            <td>{{
-                            // optional($item->product())->product_name
-                            $item -> product_id
-                            }}</td>
-                            <td>{{$item -> rating}}</td>
+                            <td>
+                                {{ \Illuminate\Support\Str::limit($item->product->product_name, 15, '...', 5) }}
+                            </td>
+                            <td>
+                                @foreach(range(1,5) as $i)
+                                <span class="fa-stack" style="width:1em">
+                                    <i class="far fa-star fa-stack-1x text-warning"></i>
+
+                                    @if($item -> rating >0)
+                                        @if($item -> rating >0.5)
+                                            <i class="fas fa-star fa-stack-1x text-warning"></i>
+                                        @else
+                                            <i class="fas fa-star-half fa-stack-1x text-warning"></i>
+                                        @endif
+                                    @endif
+                                    @php $item -> rating--; @endphp
+                                </span>
+                                @endforeach
+
+                            </td>
                             <td class="mb-2">
                                 <h5 style=" font-size: 15px" >
                                     {{ \Illuminate\Support\Str::limit($item->content, 100, '...') }}

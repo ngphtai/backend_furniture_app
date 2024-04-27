@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 class CommentsController extends Controller
 {
     public function index(){
-        $result['info'] = DB::table('comments')->get()->toArray();
+        $result['info']  = Comments::with('user', 'product')->get();
         $result['keys'] = json_decode(ForbiddenKeywords::first()->keyword);
         return view('page.comment')-> with($result);
     }
@@ -183,11 +183,11 @@ class CommentsController extends Controller
             $comments = Comments::where('product_id', $request ->product_id)->get();
             if(count($comments) == 0){
                 return response()->json([
-                    'message' => 'No comments found'
-                ],404);
+                    'data' => 'No comments found'
+                ],200);
             }
             return response()->json([
-                'comments' => $comments
+                'data' => $comments
             ],200);
 
     }

@@ -5,12 +5,12 @@
     $product = DB::table('products')->where('id', $info )->first();
     $product = App\Models\Products::with('promotion', 'category','color')->find($info );
     $images = json_decode($product->product_image, true);
+    $comments = App\Models\Comments::with('user')->where('product_id', $info)->get();
     use App\Models\Categories;
     use App\Models\Promotions;
     ?>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="page-content">
-
         <!--breadcrumb-->
             <div class="ps-3">
                 <nav aria-label="breadcrumb">
@@ -46,13 +46,24 @@
                     </h4>
 
                 </div>
-                  <div class="d-flex gap-3  " style ="margin-left:15px">
+                  <div class="d-flex gap-3  " >
                     <div class="cursor-pointer">
-                        {{$product -> rating_count}}
-                        <i class='bx bxs-star text-warning'></i>
+                        @foreach(range(1,5) as $i)
+                        <span class="fa-stack" style="width:1em">
+                            <i class="far fa-star fa-stack-1x text-warning"></i>
+                            @if($product -> rating_count >0)
+                                @if($product -> rating_count >0.5)
+                                    <i class="fas fa-star fa-stack-1x text-warning"></i>
+                                @else
+                                    <i class="fas fa-star-half fa-stack-1x text-warning"></i>
+                                @endif
+                            @endif
+                            @php $product -> rating_count--; @endphp
+                        </span>
+                        @endforeach
                         </div>
-                        <div>Số đánh giá </div>
-                        <div class="text-success"><i class='bx bxs-cart-alt align-middle'></i> Số lượng mua</div>
+                        <div style="margin-top:5px">Số đánh giá </div>
+                        <div class="text-success " style="margin-top:5px" ><i class='bx bxs-cart-alt align-middle'></i> Số lượng mua</div>
 
                         <?php
                             use App\Models\Colors;
@@ -156,16 +167,37 @@
                         </a>
                     </li>
                 </ul>
-                <div class="tab-content pt-3">
-                    <div class="tab-pane fade show active" id="primaryhome" role="tabpanel">
-                        <p>Các đánh giá nằm ở dây</p>
-                        <p>Raw denim you probably haven't heard of them jean shorts Austin. Nesciunt tofu stumptown aliqua, retro synth master cleanse. Mustache cliche tempor, williamsburg carles vegan helvetica. Reprehenderit butcher retro keffiyeh dreamcatcher synth. Cosby sweater eu banh mi, qui irure terry richardson ex squid. Aliquip placeat salvia cillum iphone. Seitan aliquip quis cardigan american apparel, butcher voluptate nisi.</p>
-                    </div>
-                    <div class="tab-pane fade" id="primaryprofile" role="tabpanel">
-                        <p>Food truck fixie locavore, accusamus mcsweeney's marfa nulla single-origin coffee squid. Exercitation +1 labore velit, blog sartorial PBR leggings next level wes anderson artisan four loko farm-to-table craft beer twee. Qui photo booth letterpress, commodo enim craft beer mlkshk aliquip jean shorts ullamco ad vinyl cillum PBR. Homo nostrud organic, assumenda labore aesthetic magna delectus mollit. Keytar helvetica VHS salvia yr, vero magna velit sapiente labore stumptown. Vegan fanny pack odio cillum wes anderson 8-bit, sustainable jean shorts beard ut DIY ethical culpa terry richardson biodiesel. Art party scenester stumptown, tumblr butcher vero sint qui sapiente accusamus tattooed echo park.</p>
-                    </div>
-                    <div class="tab-pane fade" id="primarycontact" role="tabpanel">
-                        <p>Etsy mixtape wayfarers, ethical wes anderson tofu before they sold out mcsweeney's organic lomo retro fanny pack lo-fi farm-to-table readymade. Messenger bag gentrify pitchfork tattooed craft beer, iphone skateboard locavore carles etsy salvia banksy hoodie helvetica. DIY synth PBR banksy irony. Leggings gentrify squid 8-bit cred pitchfork. Williamsburg banh mi whatever gluten-free, carles pitchfork biodiesel fixie etsy retro mlkshk vice blog. Scenester cred you probably haven't heard of them, vinyl craft beer blog stumptown. Pitchfork sustainable tofu synth chambray yr.</p>
+                <div class="card radius-10">
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            @foreach ($comments as $comment )
+                                <li class="d-flex align-items-center border-bottom pb-2">
+                                    <img src="{{ asset($comment->user->avatar?? null) }}" class="rounded-circle p-1 border" width="90" height="90" alt="Lỗi hình ảnh">
+                                    <div class="flex-grow-1 ms-3">
+                                        <h5 class="mt-0 mb-1" style="margin-right:50px">{{ $comment->user->name ?? 'User không tồn tại' }} </h5>
+                                            <span class="text-muted fs-6">
+                                                @foreach(range(1,5) as $i)
+                                                <span class="fa-stack" style="width:1em">
+                                                    <i class="far fa-star fa-stack-1x text-warning"></i>
+                                                    @if($comment->rating >0)
+                                                        @if($comment->rating >0.5)
+                                                            <i class="fas fa-star fa-stack-1x text-warning"></i>
+                                                        @else
+                                                            <i class="fas fa-star-half fa-stack-1x text-warning"></i>
+                                                        @endif
+                                                    @endif
+                                                    @php $comment->rating--; @endphp
+                                                </span>
+                                                @endforeach
+                                            </span>
+                                        <br >
+                                        {{ $comment->content }}
+                                        <br>
+                                        <small class = "mb-10">{{ $comment->created_at }}</small></div>
+                                </li>
+                            @endforeach
+                        </ul>
+                        </ul>
                     </div>
                 </div>
             </div>

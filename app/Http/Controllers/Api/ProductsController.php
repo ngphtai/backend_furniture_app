@@ -16,7 +16,7 @@ class ProductsController extends Controller
 
     public function index()
     {
-        $result['info'] = DB::table('products')->get()->toArray();
+        $result['info'] = DB::table('products')->paginate(15);
         $result['colors'] = DB::table('colors')->get()->toArray();
         return view('page.product')-> with($result);
     }
@@ -29,6 +29,7 @@ class ProductsController extends Controller
     public function detail($id)
     {
         $result['info'] = $id;
+
         return view('page.product_detail')-> with($result);
     }
 
@@ -267,7 +268,7 @@ class ProductsController extends Controller
             $color = Colors::where('id',$color_id)->first();
             $color = $color->color_name;
             $product-> color_name = $color;
-            $product->product_image = json_decode($product->product_image);
+            // $product->product_image = json_decode($product->product_image);
         //giải mã ảnh
         $product->product_image = json_decode($product->product_image);
 

@@ -28,6 +28,11 @@
 						</div>
 						<div class="menu-title">Dash Board</div>
 					</a>
+                    <a href="/homepage" >
+						<div class="parent-icon"><i class='bx bx-home-circle'></i>
+						</div>
+						<div class="menu-title">Dash Board</div>
+					</a>
 
                     <a href="/users/index" >
 						<div class="parent-icon"><i class="bx bx-user"></i>
@@ -56,11 +61,34 @@
 						</div>
 						<div class="menu-title">Categories</div>
 					</a>
-                    <a href="/orders/index" >
+                    {{-- <a href="/orders/index" >
 						<div class="parent-icon"><i class="bx bx-spreadsheet"></i>
 						</div>
 						<div class="menu-title">Orders</div>
-					</a>
+					</a> --}}
+
+                        <li>
+                            <a class="" href='{{route('order.index.v6')}}'>
+                                <div class="parent-icon"> <i class="bx bx-spreadsheet"></i>
+                                </div>
+                                <div  class="menu-title">Hoá đơn</div>
+                            </a>
+                            <ul>
+                                <li> <a href='{{route('order.index')}}'><i class="bx bx-right-arrow-alt"></i>Chưa Xác Nhận</a>
+                                </li>
+                                <li> <a href='{{route('order.index.v1')}}'><i class="bx bx-right-arrow-alt"></i>Đã Xác Nhận</a>
+                                </li>
+                                <li> <a href='{{route('order.index.v2')}}'><i class="bx bx-right-arrow-alt"></i>Đang Giao</a>
+                                </li>
+                                <li> <a href='{{route('order.index.v3')}}'><i class="bx bx-right-arrow-alt"></i>Đã hoàn thành</a>
+                                </li>
+                                <li> <a href='{{route('order.index.v4')}}'><i class="bx bx-right-arrow-alt"></i>Yêu cầu hoàn tiền</a>
+                                </li>
+                                <li> <a href='{{route('order.index.v5')}}'><i class="bx bx-right-arrow-alt"></i>Đã huỷ</a>
+                                </li>
+                            </ul>
+                        </li>
+
                     <a href="/categories/index" >
 						<div class="parent-icon"><i class="bx bx-message-rounded"></i>
 						</div>

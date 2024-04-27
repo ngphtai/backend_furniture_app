@@ -12,61 +12,72 @@ class VnpayController extends Controller
 {
     public function pay(Request $request)
     {
-        $products = [
-            ['product_id' => 82, 'quantity' => 2],
-            ['product_id' => 83, 'quantity' => 3],
-          ];
-        $total_price = 0;
+
+        $products = json_decode($request->products);
+        $Total_price = $request->total_price;
         //with array product
         foreach($products as $item){ // test
-            $product_id = $item['product_id'];
+            $product_id = $item->product_id;
             $product = Products::where('id',"=", $product_id)->first();
             if(empty($product)){
                 return response()->json(['message' => 'Product not found'], 404);
             }
-            if( $item['quantity'] > $product->quantity){
+            if( $item->quantity > $product->quantity){
                 return response()->json(['message' => 'Product not enough quantity'], 404);
             }
-            $total_price += $product->price * $item['quantity'];
+
         }
 
-        $oderMap =[];
-        $oderMap['products'] = json_encode($products); //test
-        $orderMap['user_id'] = $request->user_id;
-        $orderMap['total_price'] = $total_price;
-        $orderMap['email'] = $request->email;
-        $orderMap['phone'] = $request->phone;
-        $orderMap['address'] = $request->address;
-        $oderMap['status'] = 1;
+        // $oderMap =[];
+        // $oderMap['products'] = json_encode($products ); //test
+        // $orderMap['user_id'] = $request->uid;
 
-        $orderRes = Orders::where($oderMap)->first();
+        // $oderMap['status'] = 1;
 
-        if(!empty($orderRes)){
-           return response()->json(['message' => 'Order is available!!'], 404);
-        }
+        // $orderRes = Orders::where($oderMap)->first();
+
+        // if(!empty($orderRes)){
+        //    return response()->json(['message' => 'Order is available!!'], 404);
+        // }
 
             $map = [] ;
-            $map['user_id'] = $request->user_id;
-            $map['total_price'] = $total_price;
+            $map['user_id'] = $request->uid;
+            $map['total_price'] = $Total_price;
             $map['products'] = json_encode($products);//test
             $map['address'] = $request->address;
             $map['phone'] = $request->phone;
             $map['name'] = $request->name;
             $map['type_payment'] = "vnpay";
             $map['status'] = 0;
-            $map['note'] = $request->note;
+            $map['note'] = $request->note??'';
             $map['is_done'] = 0;
             $map['created_at'] = Carbon::now();
 
             $order_id = Orders::insertGetId($map);
-            $TotalPrice = $total_price;
+
+        //trừ số lượng sp mới mua trong kho
+        $order = Orders::where('id', $order_id)->first();
+        $order->products = json_decode($order->products, true);
+
+        foreach($order->products as $product){
+            $product_id = (int) $product['product_id'];
+            $quantity = $product['quantity'];
+
+            $product = Products::where('id', $product_id)->first();
+
+            $product->quantity -= $quantity;
+            $product->sold += $quantity;
+            $product->save();
+        }
+
 
         error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
         date_default_timezone_set('Asia/Ho_Chi_Minh');
         $vnp_TmnCode = "S4SMEJK5"; //Website ID in VNPAY System
         $vnp_HashSecret = "EAORGNSLPZWOCEUQVZWUFEYIMQTOFTNR"; //Secret key
         $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        $vnp_Returnurl = " https://a446-2402-800-62ee-c76a-f1bb-1484-c00d-bcca.ngrok-free.app/api/vnpay-return";  // URL nhan ket qua tra ve
+
+        $vnp_Returnurl = env('APP_URL') . '/api/vnpay-return';  // URL nhan ket qua tra ve
         $vnp_apiUrl = "http://sandbox.vnpayment.vn/merchant_webapi/merchant.html";
         //Config input format
         //Expire
@@ -76,7 +87,7 @@ class VnpayController extends Controller
         $vnp_TxnRef = $order_id; //Mã đơn hàng. Trong thực tế Merchant cần insert đơn hàng vào DB và gửi mã này sang VNPAY
         $vnp_OrderInfo = 'Thanh toán đơn hàng ';
         $vnp_OrderType = 'billpayment';
-        $vnp_Amount = $TotalPrice * 100;
+        $vnp_Amount = $Total_price * 100;
         $vnp_Locale = 'vn';
         $vnp_BankCode = '';
         $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
@@ -174,35 +185,43 @@ class VnpayController extends Controller
 
         $vnp_ResponseCode = $request->input('vnp_ResponseCode');
         $vnp_TxnRef = $request->input('vnp_TxnRef');
-
+        $successUrl = env('APP_URL') . '/api/success/' . $vnp_TxnRef;
+        $cancelUrl = env('APP_URL') . '/api/cancel/'. $vnp_TxnRef ;
         if ($vnp_ResponseCode == '00') {
             $order = Orders::find($vnp_TxnRef);
             $order->status = 1;
             $order->updated_at = Carbon::now();
-            $order->products = json_decode($order->products);
-            foreach($order->products as $product){
 
-                $product_id = $product['product_id'];
+            $order->products = json_decode($order->products, true);
+
+            foreach($order->products as $product){
+                $product_id = (int) $product['product_id'];
                 $quantity = $product['quantity'];
 
                 $product = Products::where('id', $product_id)->first();
 
-                $product->quantity -= $quantity;
-                $product->sold += $quantity;
+                $product->check_quantity -= $quantity;
+                if($product->check_quantity < 0){
+                    $product->check_quantity = 0;
+                    $order ->is_done = 4;
+                    $order->save();
+                    $product->save();
+                    return Redirect::to($successUrl); // thông báo hết hàng
+                }
                 $product->save();
             }
 
             $order->save();
-            return Redirect::to('{{DB_HOST}}:3000/orders/details/success/' . $vnp_TxnRef);
+            return Redirect::to($successUrl);
         } else {
             $order = Orders::find($vnp_TxnRef);
             //xoá order
             $order->delete();
 
-            return Redirect::to('{{DB_HOST}}:3000/orders/details/failed' )-> with('error', 'Thanh toán thất bại');
+            return Redirect::to($cancelUrl );
         }
 
-        return Redirect::to('{{DB_HOST}}:3000/orders/details/' . $vnp_TxnRef);
+        return Redirect::to($successUrl);
     }
 
     public function totalPrice(){

@@ -71,15 +71,25 @@ Route::post('/notifications/update/', [NotificationsController::class, 'update']
 //Payment Stripe
 Route::Any('checkout', [PaymentController::class, 'checkout']);
 Route::Any('webGoHook', [PaymentController::class, 'webGoHook']);
-Route::Any('success', [PaymentController::class, 'success']);
-Route::Any('cancel', [PaymentController::class, 'cancel']);
+Route::post('success', [PaymentController::class, 'success']);
+Route::post('cancel', [PaymentController::class, 'cancel']);
 //VNPay
 
 Route::any('vnpay-return', [VnpayController::class, 'vnpayReturn']);
 Route::post('payment-vnpay', [VnpayController::class, 'pay']);
 Route::get('test', [VnpayController::class, 'totalPrice']); // test for total price order
 
+//Direct
+Route::post('payment-direct', [PaymentController::class, 'direct']);
 
 //Orders
 Route::get('/orders/all', [OrdersController::class, 'all']);
 Route::post('/orders/show/', [OrdersController::class, 'updatedone']);
+Route::get('/search', [OrdersController::class, 'search']);
+Route::get('/success/{id}',[OrdersController::class, 'success']);
+Route::get('/cancel/{id}',[OrdersController::class, 'cancel']);
+//test
+
+
+
+

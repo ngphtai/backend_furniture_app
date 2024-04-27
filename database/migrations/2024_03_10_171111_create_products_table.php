@@ -23,6 +23,7 @@ return new class extends Migration
             $table->decimal('price', 8, 2);// decimal là kiểu số
             $table->integer('sold')->default(0);
             $table->boolean('is_show')->default(true);
+            $table->ingteger('check_quantity');
             $table->timestamps();
         });
     }
@@ -34,5 +35,7 @@ return new class extends Migration
     {
         Schema::dropIfExists('products');
     }
+
+
 };
 

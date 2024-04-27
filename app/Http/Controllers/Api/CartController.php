@@ -82,8 +82,8 @@ class CartController extends Controller
         if ($prod) {
             foreach ($prod->items as $key => $item) { // kiểm tra sản phẩm đã có trong giỏ hàng chưa
                 if ($item->id == $request->products_id) {
-                    $prod->items[$key]->quantity += $request->quantity;
-                    $prod->totalItems += $request->quantity;
+                    $prod->items[$key]->quantity +=(int) $request->quantity +0;
+                    $prod->totalItems +=(int) $request->quantity;
                     $prod->total += $dicountPrice * $request->quantity;
                     $cart->products = json_encode($prod);
                     $cart->save();
@@ -100,11 +100,11 @@ class CartController extends Controller
             'name' => $name,
             'price' => $price,
             'image' => $product_image,
-            'quantity' => $request->quantity,
+            'quantity' => (int)$request->quantity +0,
             'dicountPrice' => $dicountPrice,
         ];
 
-        $prod->totalItems += $request->quantity;
+        $prod->totalItems +=(int) $request->quantity;
         $prod->total += $dicountPrice * $request->quantity;
         $cart->products = json_encode($prod);
         $cart->save();
@@ -121,11 +121,11 @@ class CartController extends Controller
             'name' => $name,
             'price' => $price,
             'image' => $product_image,
-            'quantity' => $request->quantity,
+            'quantity' => (int)$request->quantity,
             'dicountPrice' => $dicountPrice,
         ];
 
-        $prod->totalItems += $request->quantity;
+        $prod->totalItems +=(int) $request->quantity;
         $prod->total += $dicountPrice* $request->quantity;
         $cart->products = json_encode($prod);
 
@@ -172,7 +172,7 @@ class CartController extends Controller
                         $promotion = 0.0;
                     }
                 }
-                $prod->totalItems -= $item->quantity;
+                $prod->totalItems -=(int) $item->quantity;
                 $prod->total -= ($item->price - $item->price*$promotion/100) * $item->quantity;
                 // xoá giá trị trong mảng
                 array_splice($prod->items, $key, 1); //unset là xoá giá trị trong mảng nhưng vẫn giữ index còn array_splice là xoá giá trị và index
@@ -200,7 +200,6 @@ class CartController extends Controller
 
             $cart = Cart::where('uid', $request->uid)->first();
 
-
             $prod = json_decode($cart->products);
             foreach ($prod->items as $key => $item) {
                 if ($item->id == $request->product_id) {
@@ -223,7 +222,7 @@ class CartController extends Controller
                     $change = $request->quantity - $item->quantity;// số lượng thay đổi
 
                     $prod->totalItems += $change;
-                    $prod->items[$key]->quantity = $request->quantity;
+                    $prod->items[$key]->quantity = (int)$request->quantity/1;
                     if($prod->items[$key]->quantity == 0){
                         array_splice($prod->items, $key, 1);
                     }

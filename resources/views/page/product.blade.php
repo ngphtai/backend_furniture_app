@@ -55,6 +55,7 @@
                                         <?php
                                         $info = App\Models\Products::with('promotion')->get();
                                         $info = App\Models\Products::with('category')->get();
+
                                         // lấy ra tất cả sản phẩm và danh mục của sản phẩm ( trong model Products có 1 hàm category dùng để lấy ra danh mục của sản phẩm)
                                         ?>
                                         @foreach ($info as $item )
@@ -89,8 +90,21 @@
                                                     </h5>
                                                     <h6 class="font-size-15">{{optional($item->category)->name }}</h6>
                                                     <p class="text-muted mb-0 mt-2 pt-2">
-                                                       {{ $item->rating_count}}
-                                                        <i class="bx bxs-star text-warning"></i>
+
+                                                       @foreach(range(1,5) as $i)
+                                                       <span class="fa-stack" style="width:1em">
+                                                           <i class="far fa-star fa-stack-1x text-warning"></i>
+
+                                                           @if($item -> rating_count >0)
+                                                               @if($item -> rating_count >0.5)
+                                                                   <i class="fas fa-star fa-stack-1x text-warning"></i>
+                                                               @else
+                                                                   <i class="fas fa-star-half fa-stack-1x text-warning"></i>
+                                                               @endif
+                                                           @endif
+                                                           @php $item -> rating_count--; @endphp
+                                                       </span>
+                                                       @endforeach
                                                     </p>
                                                 </div>
                                             </td>
@@ -100,7 +114,7 @@
                                                     <li><p class="text-muted mb-1 text-truncate"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i>Tồn kho:<b style ="font size:13 px"> {{$item -> quantity}}</b> </p></li>
                                                     <li><p class="text-muted mb-1 text-truncate"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i>Đã bán:<b style ="font size:13 px"> {{$item -> sold}}</b> </p></li>
                                                     <li><p class="text-muted mb-0 text-truncate"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i>Giá tiền: <b style ="font size:15 px">{{$item -> price}}</b></p></li>
-                                                    <li><p class="text-muted mb-1 text-truncate"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i>Khuyến mãi: <b style ="font size:13 px">{{optional($item->promotion)->discount}}%  </b> </p></li>
+                                                    <li><p class="text-muted mb-1 text-truncate"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i>Khuyến mãi: <b style ="font size:13 px">{{optional($item->promotion)->discount?? 0}}%  </b> </p></li>
                                                 </ul>
                                             </td>
 
@@ -187,11 +201,12 @@
                                     <div class ="list-color" style="display:none">
                             </table>
                             <hr class="mt-4">
-                                <label  class="form-label "  >Thêm từ khoá</label>
+                                <label id = "labelEdit" class="form-label "  >Thêm từ khoá</label>
                                 <div class="mb-3 d-flex">
                                     <input type= "hidden" name ="id" id="id"></input>
                                     <input name="color_name" id ="color_name" type="text" style ="margin:0 5px 5px 0" class="form-control"  placeholder="Nhập mã màu muốn thêm *" required>
-                                    <button  type="submit" style ="margin:5px" class="btn btn-primary " >Thêm</button>
+                                    <button id ="reset"  style ="margin:5px" class="btn btn-warning " >Reset</button>
+                                    <button id ="buttonColor" type="submit" style ="margin:5px" class="btn btn-primary " >Thêm</button>
                                 </div>
                         </div>
                     </div>
@@ -232,6 +247,7 @@
                 data:{'search':query},
                 success:function(data){
                     $('#search_list').html(data);
+
                 }
             });
         });
@@ -250,8 +266,9 @@
             var id = $(this).attr('id');
             console.log("Edit button clicked with ID:", id);
 
-            $('submit').val("Câp nhật"); // Update button text
-
+            // Update button text
+            $('#buttonColor').text("Cập nhật");
+            $('#labelEdit').text("Cập nhật từ khoá");
             $.ajax({
                 type: "GET",
                 url: "{{ route('color.edit') }}", // Check route helper definition
@@ -263,6 +280,8 @@
                 console.log("AJAX success:", data);
                 $('#color_name').val(data.color_name);
                 $('#id').val(data.id);
+                //toart thông báo khi cập nhật thành công
+                toastr.success('Cập nhật thành công');
                 },
                 error: function(error) {
                 console.error("AJAX error:", error);
@@ -273,7 +292,12 @@
         } else {
             console.warn("Element with ID 'ColorManagement' not found"); // Debugging log
         }
-
+        $('#reset').click(function(){
+            $('#color_name').val(null);
+            $('#id').val(null);
+            $('#buttonColor').text("Thêm");
+            $('#labelEdit').text("Thêm từ khoá");
+        });
     });
 </script>
 
