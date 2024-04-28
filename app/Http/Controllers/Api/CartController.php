@@ -8,34 +8,7 @@ use App\Models\Carts as cart;
 use App\Models\Products ;
 use Illuminate\Support\Facades\DB;
 use  App\Models\Promotions;
-// example cart
-// {
-//     "uid" : 3,
-//     "products": {
-//         "items": [
-//         {
-//             "id": "1",
-//             "name": "Product 1",
-//             "price": 10.99,
-//             "quantity": 2
-//         },
-//         {
-//             "id": "2",
-//             "name": "Product 2",
-//             "price": 5.49,
-//             "quantity": 1
-//         },
-//         {
-//             "id": "3",
-//             "name": "Product 3",
-//             "price": 7.79,
-//             "quantity": 3
-//         }
-//         ],
-//         "totalItems": 6,
-//         "total": 59.11
-//     }
-// }
+
 class CartController extends Controller
 {
     public function addToCart(Request $request)
@@ -141,8 +114,29 @@ class CartController extends Controller
         if(!$cart){
             return response()->json(["Messenger" => "Chưa có sản phẩm"], 200);
         }
-        $cart->products = json_decode($cart->products);
+        $prod = json_decode($cart->products);
+        foreach ($prod->items as $key => $item) {
+            $product = DB::table('products')->where('id', $item->id)->first();
+            $promotion = Promotions::where("id",$product->promotion_id)->first();
+            if(empty($promotion)){
+                $promotion = 0.0;
+            }
+            else{
+                if(time() > strtotime($promotion->start_date) && time() < strtotime($promotion->end_date)){
+                    $promotion = $promotion->discount;
+                }
+                else {
+                    $promotion = 0.0;
+                }
+            }
+            $tempPrice = $item->price;
+            $item->dicountPrice = $tempPrice - $tempPrice * $promotion / 100;
+            $prod->total += $item->dicountPrice *$item->quantity ;
+        }
+        $cart->products = json_encode( $prod);
+        $cart->save();
 
+        $cart->products = json_decode($cart->products);
         return response()-> json(["Messenger" =>"success","Cart"=> $cart] , 200);
     }
 
