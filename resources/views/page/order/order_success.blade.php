@@ -151,8 +151,7 @@
         function postMessage(){
             Pay.postMessage('success');
         }
-
-        </script>
+    </script>
     <!-- test ở đây nha! nếu check = 0 thì đã thanh toán và bằng 1 là chưa thanh toán -->
     {{-- <h6 id="check">1</h6>
 

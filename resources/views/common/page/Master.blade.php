@@ -89,7 +89,7 @@
                             </ul>
                         </li>
 
-                    <a href="/categories/index" >
+                    <a href="/chatbox" >
 						<div class="parent-icon"><i class="bx bx-message-rounded"></i>
 						</div>
 						<div class="menu-title">Messenger</div>

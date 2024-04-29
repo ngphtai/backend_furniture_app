@@ -130,8 +130,8 @@ class ProductsController extends Controller
             }
             foreach ($images as $image) {
                 $storedImages[] = $image;
-            }
-            $productData['product_image'] = json_encode($storedImages);
+                }
+                $productData['product_image'] = json_encode($storedImages);
         }
 
         $product->fill($productData)->save();

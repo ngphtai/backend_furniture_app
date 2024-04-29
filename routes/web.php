@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ProductsController;
 use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\Api\PromotionsController;
 use App\Http\Controllers\Api\CategoriesController;
+use App\Http\Controllers\api\ChatboxController;
 use App\Http\Controllers\testController;
 use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\Api\CommentsController;
@@ -85,6 +86,7 @@ Route::group(['middleware'=> 'checkAdminLogin' ],function () {
         Route::post('/add', [ColorsController::class, 'add'])->name('color.add');
         Route::get('/edit', [ColorsController::class, 'edit'])->name('color.edit');
     });
+    Route::get('/chatbox', [ChatboxController::class, 'index']);
 
     Route::group(['prefix'=> '/orders'], function(){
         Route::get('/index/v0', [OrdersController::class, 'index'])->name('order.index');
@@ -104,8 +106,10 @@ Route::group(['middleware'=> 'checkAdminLogin' ],function () {
 
         Route::get('/toPDF/{id}', [OrdersController::class, 'toPDF'])->name('order.toPDF');
     });
+
     Route::get('/generate-pdf', [PdfController::class, 'generatePDF'])-> name('generate-pdf');
 });
 
 Route::get('/test', [PdfController::class, 'index']);
+
 

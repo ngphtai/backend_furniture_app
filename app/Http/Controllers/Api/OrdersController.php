@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Orders;
+use App\Models\InforUsers;
 use Stripe\Climate\Order;
+
 
 class OrdersController extends Controller
 {
@@ -88,6 +90,7 @@ class OrdersController extends Controller
             return response()->json(['message' => 'Not found'], 404);
         return response()-> json($order);
     }
+
 
     public function all(Request $request){
         $orders = DB::table('orders')->get();
@@ -237,6 +240,33 @@ class OrdersController extends Controller
 
 
     //API
+    public function allByUid(Request $request){
+        $request->validate([
+            'uid' => 'required'
+        ]);
+        $orders = Orders::where('user_id', $request->uid)->get() ;
+
+        foreach($orders as $order){
+            $products = json_decode($order->products);
+            foreach($products as $item){
+                $product = DB::table('products')->where('id', $item->product_id)->first();
+
+                $product->product_image = json_decode($product->product_image);
+                $product->product_image = json_decode($product->product_image);
+
+                $item->image = $product->product_image[0];
+                $item->product_id = $product->product_name;
+                $order->products = $products;
+            }
+        }
+
+
+
+        if($orders->isEmpty())
+            return response()->json(['message' => 'Not found'], 404);
+
+        return response()->json($orders);
+    }
 
     public function success(String $id){
         $order = Orders::where('id', $id)->first();
