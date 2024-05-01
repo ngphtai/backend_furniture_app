@@ -53,6 +53,36 @@
                                 </div>
                             </div>
                         </form>
+                        <hr style="width:80%, align:min-content" >
+                        <br>
+                        <div class="row">
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0" for = "oldPass">Mật khẩu cũ</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    <input type="text" class="form-control"  name ="oldPass" id = "oldPass" />
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0" for =" newPass">Mật khẩu Mới</h6></h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    <input type="text" class="form-control" name ="newPass" id = "newPass"  />
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0" for ="repeatPass">Xác Nhận Mật khẩu</h6></h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    <input type="text" class="form-control"  name ="repeatPass" id = "repeatPass"  />
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column align-items-center text-center">
+                                <button id="changePass"name = "changePass" type="button" class="btn btn-info px-3  radius-30">Đổi mật khẩu</button>
+                            </div>
                     </div>
                 </div>
 
@@ -63,56 +93,46 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script>
-    // $(document).ready(function(){
-    //     $("#image").change(function(){
-    //         alert('change');
-    //         var file = $(this)[0].files[0];
-    //         $.ajax({
-    //             url: "",
-    //             type: "POST",
-    //             data: {
-    //                 file: file,
-    //                 uid: $('#uid').val()
-    //             }
-    //             success: function(data){
-    //                 reload();
-    //                 toastr.success("Update success");
-    //                 $('#avatar').attr('src', data.avatar);
-    //             }
-    //         });
-    //     });
-    // });
-</script>
-
-@endsection
-
-{{-- <script>  không sử dụng vì không thể dùng toastr trong blade
     $(document).ready(function(){
-        $("#form").submit(function(e){
-            e.preventDefault();
-            alert('submit');
-            var formData = new FormData(this);
+        $("#changePass").on('click',function(){
+            $.ajaxSetup({ headers: { 'X-CSRF-TOKEN' : '{{ csrf_token() }}' } });
+            alert("changePass");
+            var oldPass = $("#oldPass").val();
+            var newPass = $("#newPass").val();
+            var repeatPass = $("#repeatPass").val();
+            var uid = $("#uid").val();
+            if (newPass != repeatPass){
+                toastr.error("Mật khẩu không trùng khớp");
+                return;
+            }
             $.ajax({
-                url: '{{ route('user.update')}}',
+                url: "{{route('user.changePass')}}",
                 type: "POST",
-                data: formData,
-                contentType: false,
-                processData: false,
+                data: {
+                    oldPass: oldPass,
+                    newPass: newPass,
+                    uid: uid,
+                    '_token': '{{ csrf_token() }}'
+
+                },
                 success: function(data){
-                    // load lại trang
-                    location.reload();
-                    //SỬ DỤNG TOASTR
-                    toastr.success("Update success");
+                    // toastr.success("Đổi mật khẩu thành công");
+                    $("#oldPass").val("");
+                    $("#newPass").val("");
+                    $("#repeatPass").val("");
+                },
+                error: function(data){
+                    toastr.error(data.responseJSON.message);
                 }
-                console.error(function(data){
-                    toastr.error("Update fail");
-                });
             });
         });
 
     });
+</script>
+
+@endsection
 
 
-</script> --}}

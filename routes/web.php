@@ -61,6 +61,8 @@ Route::group(['middleware'=> 'checkAdminLogin' ],function () {
         Route::post('/store', [UsersController::class, 'addNewUser'])->name('user.store');
         Route::get('/block/{id}', [UsersController::class, 'block']);
         Route::post('/update', [UsersController::class, 'update'])->name('user.update');
+        Route::post('/changePass', [UsersController::class, 'changePass'])->name('user.changePass');
+
     });
 
     Route::group(['prefix' => '/products'], function () {

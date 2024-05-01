@@ -18,7 +18,7 @@ class UsersController extends Controller
     }
 
     public function index(){
-        $result['info'] = DB::table('users')->get()->toArray();
+        $result['info'] = DB::table('users')->paginate(15);
         return view('page.Users', $result);
     }
 
@@ -158,6 +158,27 @@ class UsersController extends Controller
         return response()->json(['message' => 'User updated successfully', 'user' => $pass], 200);
     }
 
+    public function changePass(Request $request){
+        $request->validate([
+            'uid' => 'required',
+            'oldPass' => 'required',
+            'newPass' => 'required',
+        ]);
+        $user = Users::where('uid', $request->uid)->first();
+        if (!$user) {
+            toastr()->error('Email không tồn tại');
+            return response()->json(['message' => 'Email không tồn tại'], 400);
+        }
+        if (!password_verify($request->oldPass, $user->password)) {
+            toastr()->error('Mật khẩu cũ không chính xác');
+            return response()->json(['message' => 'Mật khẩu cũ không chính xác'], 400);
+        }
+        $user->password = bcrypt($request->newPass);
+        $user->save();
+        toastr()->success('Đổi mật khẩu thành công');
+        return response()->json(['message' => 'Đổi mật khẩu thành công'], 200);
+
+    }
     public function update(Request $request)
     {
         try {

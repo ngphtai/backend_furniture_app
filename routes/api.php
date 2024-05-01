@@ -83,11 +83,11 @@ Route::get('test', [VnpayController::class, 'totalPrice']); // test for total pr
 Route::post('payment-direct', [PaymentController::class, 'direct']);
 
 //Orders
-Route::any('/orders/allByUid', [OrdersController::class, 'allByUid']);
+Route::post('/orders/allByUid', [OrdersController::class, 'allByUid']);
 Route::post('/orders/show/', [OrdersController::class, 'updatedone']);
 Route::any('/search', [OrdersController::class, 'search']);
 Route::any('/success/{id}',[OrdersController::class, 'success']);
-Route::any('/cancel/{id}',[OrdersController::class, 'cancel']);
+Route::any('/cancel/{id}/{error}',[OrdersController::class, 'cancel']);
 //test
 
 

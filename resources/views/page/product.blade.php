@@ -46,15 +46,15 @@
                         <div class="row">
                             <div class="col-xl-12">
                                 <table class="table table-striped align-middle table-nowrap">
-                                    <?php $stt =1 ?>
+                                    {{-- <?php $stt =1 ?> --}}
                                     <tbody id="search_list">
                                         {{-- trả về kết quả tìm kiếm --}}
                                     </tbody>
 
                                     <tbody  id ="alldata">
                                         <?php
-                                        $info = App\Models\Products::with('promotion')->get();
-                                        $info = App\Models\Products::with('category')->get();
+                                        // $info = App\Models\Products::with('promotion')->get();
+                                        // $info = App\Models\Products::with('category')->get();
 
                                         // lấy ra tất cả sản phẩm và danh mục của sản phẩm ( trong model Products có 1 hàm category dùng để lấy ra danh mục của sản phẩm)
                                         ?>
@@ -63,7 +63,7 @@
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <div class="ms-2">
-                                                        <h6 class="mb-0 font-14"><?= $stt++?></h6>
+                                                        <h6 class="mb-0 font-14"> {{$item ->id}}</h6>
                                                     </div>
                                                 </div>
                                             </td>
@@ -90,7 +90,7 @@
                                                     </h5>
                                                     <h6 class="font-size-15">{{optional($item->category)->name }}</h6>
                                                     <p class="text-muted mb-0 mt-2 pt-2">
-
+                                                        {{$item -> rating_count}}
                                                        @foreach(range(1,5) as $i)
                                                        <span class="fa-stack" style="width:1em">
                                                            <i class="far fa-star fa-stack-1x text-warning"></i>
@@ -149,6 +149,7 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                                {{$info -> links()}}
                             </div>
                         </div>
                 </div>
@@ -167,7 +168,7 @@
                 <form action="{{route('color.add')}}" method="POST" id ="form_color" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">
-                        <div class="table-responsive">
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
                             <table class = "table mb-0">
                                     @if(session('success'))
                                         <div class="alert alert-success" role="alert">
@@ -181,24 +182,25 @@
                                             @endforeach
                                         </div>
                                     @endif
-                                    <div class ="all-color">
-                                            @foreach ($colors as $color)
-                                                <tr>
-                                                    <td >
-                                                        <a class="ms-auto radius-30 text-black " style=" width:100px; height:30px;margin-top:20px">{{$color->id}} </a>
-                                                    </td>
-                                                    <td >
-                                                        <div class="ms-auto radius-30 " style="background-color: #{{$color->color_name }}; width:150px; height: 30px; margin:0 20px 20px 0"></div>
-                                                    </td>
-                                                    <td>
-                                                        <div class="ms-auto radius-30 btn edit-btn" id = '{{$color ->id}}'  style=" width:100px; height: 40px;">
-                                                              <i class='bx bxs-edit text-black' ></i>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
+                                    <div class="all-color" >
+                                        @foreach ($colors as $color)
+                                            <tr>
+                                                <td>
+                                                    <a class="ms-auto radius-30 text-black" style="width: 100px; height: 30px; margin-top: 20px">{{$color->id}}</a>
+                                                </td>
+                                                <td>
+                                                    <div class="ms-auto radius-30" style="background-color: #{{$color->color_name}}; width: 150px; height: 30px; margin: 0 20px 20px 0"></div>
+                                                </td>
+                                                <td>
+                                                    <div class="ms-auto radius-30 btn edit-btn" id='{{$color->id}}' style="width: 100px; height: 40px;">
+                                                        <i class='bx bxs-edit text-black'></i>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
                                     </div>
-                                    <div class ="list-color" style="display:none">
+                                    </div>
+                                    <div class ="list-color" >
                             </table>
                             <hr class="mt-4">
                                 <label id = "labelEdit" class="form-label "  >Thêm từ khoá</label>

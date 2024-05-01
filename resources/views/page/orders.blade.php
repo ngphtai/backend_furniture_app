@@ -12,7 +12,7 @@
         <!--end breadcrumb-->
         <?php
             //  dd($info);
-            $stt=1;
+            // $stt=1;
 
             // $info = $info->sortByDesc('created_at')-> where ('is_done', 0);
 
@@ -22,7 +22,7 @@
                 <div>
                     <div class="d-lg-flex align-items-center mb-4 gap-3">
                         <div class="position-relative">
-                            <input id ="search" type="text" class="form-control ps-5 radius-30" placeholder="Example@email.com"> <span class="position-absolute top-50 product-show translate-middle-y"><i class="bx bx-search"></i></span>
+                            <input id ="search" name ="search" type="text" class="form-control ps-5 radius-30" placeholder="Tên Người dùng" > <span class="position-absolute top-50 product-show translate-middle-y"><i class="bx bx-search"></i></span>
                         </div>
                         <div class="gap-3">
                             <div class="dropdown">
@@ -90,12 +90,16 @@
                                     <td colspan="10" class=" bg-warning text-center">Không có dữ liệu</td>
                                 </tr>
                             @endif
+                            @php
+                                // sắp xếp từ mới tới cũ theo ngày
+
+                            @endphp
                             @foreach ($info as $item )
                             <tr >
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="ms-2">
-                                            <h6 class="mb-0 font-14">{{$stt++}}</h6>
+                                            <h6 class="mb-0 font-14">{{$item -> id}}</h6>
                                         </div>
                                     </div>
                                 </td>
@@ -143,6 +147,7 @@
                         <tbody class ="search-data">
                         </tbody>
                     </table>
+                    {{$info->links()}}
                 </div>
             </div>
         </div>
@@ -242,7 +247,7 @@
                             {{-- <button type="submit" id = "turnAround"   class="btn btn-danger px-5 radius-30"  >Quay ngược</button>
                             <button type="submit" id = "toWards"   class="btn btn-success px-5 radius-30"  >Chuyển tiếp</button> --}}
                             <div class="dropdown">
-                                <button id="status-navigation" class="btn btn-outline-primary" type="button" data-bs-toggle="dropdown" aria-expanded="false">Cập nhật Trạng thái</button>
+                                <button id="status-navigation" class="btn btn btn-info radius-30" type="button" data-bs-toggle="dropdown" aria-expanded="false">Cập nhật Trạng thái</button>
                                     <ul class="dropdown-menu">
                                         <li><a class="badge text-success bg-light-success p-2 text-uppercase px-3 rounded-0 dropdown-item" href="#" onclick="changeTrangthai2('Hoàn thành')">Hoàn thành</a></li>
                                         <li><a class="badge rounded-0 text-info bg-light-info p-2  text-uppercase px-3 dropdown-item" href="#" onclick="changeTrangthai2('Đang giao')">Đang giao</a></li>
@@ -578,7 +583,7 @@
             var typepayment = $('#filterTypePayment').text();
             if(typepayment == 'Phương thức')
                 typepayment = '';
-            // alert($('#filterStatus').text() );
+
             var status='';
             if($('#filterStatus').text() == 'Thành công')
                 status = 1;
@@ -632,7 +637,7 @@
                         html += `<td>`;
                         html += `<div class="d-flex align-items-center">`;
                         html += `<div class="ms-2">`;
-                        html += `<h6 class="mb-0 font-14">${stt}</h6>`;
+                        html += `<h6 class="mb-0 font-14">${item.id}</h6>`;
                         html += `</div>`;
                         html += `</div>`;
                         html += `</td>`;

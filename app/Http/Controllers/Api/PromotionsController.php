@@ -12,7 +12,7 @@ class PromotionsController extends Controller
 {
     public function index()
     {
-        $result['info'] = DB::table('promotions')->get()->toArray();
+        $result['info'] = DB::table('promotions')->paginate(10);
         return view('page.promotion', $result);
     }
     public function edit(Request $request)
@@ -85,7 +85,7 @@ class PromotionsController extends Controller
     }
 
     // search by name
-    public function search(Request $request){
+    public function search_admin(Request $request){
         $output ="";
         $stt = 1;
         if($request->ajax() && $request->search != ""){
@@ -97,13 +97,13 @@ class PromotionsController extends Controller
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="ms-2">
-                                            <h6 class="mb-0 font-14">';
-                                                $output .= $stt++;
-                                 $output.= '</h6>
+                                            <h6 class="mb-0 font-14">'
+                                                .$item -> id.
+                                        '</h6>
                                         </div>
                                     </div>
                                 </td>
-                                <td>'.$item -> name.'</td>
+                                <td>'.$item -> promotion_name   .'</td>
                                 <td>'.$item -> description.'</td>
                                 <td>'.$item -> discount.'%</td>
                                 <td>'.$item -> start_date.'</td>

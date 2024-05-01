@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Succrssfull</title>
+    <title>Order Failed</title>
         <link rel="icon" href="/assets/images/favicon-32x32.png" type="image/png" />
     <!--plugins-->
     <link href="/assets/plugins/vectormap/jquery-jvectormap-2.0.2.css" rel="stylesheet"/>
@@ -95,7 +95,7 @@
     </div>
     <div class="container my-3">
         <h7 class="text-Dark mb-0">
-            Date: 11:20 - 12/04/2023
+            Date: {{ now()->setTimezone('Asia/Ho_Chi_Minh')->format('Y-m-d H:i:s') }}
         </h7>
         <!-- <h7 class="text-Dark mb-0">
             ID: abv54as83
@@ -104,15 +104,9 @@
     <div style="border-top: 1px solid lightgray; margin-top: 4px; margin-bottom: 6px;"></div>
     <div class="card-body">
 	    <div class="container">
-			<strong class="text-Secondary mb-1"  style ="font-size: 18px;">Đặt hàng không thành công</strong>
+			<strong class="text-Secondary mb-1"  style ="font-size: 18px;">Nguyên Nhân: {{$error}}</strong>
 		<div class="column column-cols-auto g-3">
-		    <div class="col">
-                <div style="display: inline-block;" class="text-secondary rounded">Mã lỗi:</div>
-                <em style="display: inline-block;"> ab34d77508</em>
-            </div>
-		    <div class="col">
-                <div style="display: inline-block;" class="text-secondary rounded">Thao tác không thành công</div>
-            </div>
+
 		    <div class="col">
                 <div style="display: inline-block;" class="text-secondary rounded">Yêu cầu thực hiện lại giao dịch</div>
             </div>

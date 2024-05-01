@@ -51,7 +51,7 @@ class VnpayController extends Controller
             $map['status'] = 0;
             $map['note'] = $request->note??'';
             $map['is_done'] = 0;
-            $map['created_at'] = Carbon::now();
+            $map['created_at'] = Carbon::now()->setTimezone('Asia/Ho_Chi_Minh');
 
             $order_id = Orders::insertGetId($map);
 
@@ -186,11 +186,11 @@ class VnpayController extends Controller
         $vnp_ResponseCode = $request->input('vnp_ResponseCode');
         $vnp_TxnRef = $request->input('vnp_TxnRef');
         $successUrl = env('APP_URL') . '/api/success/' . $vnp_TxnRef;
-        $cancelUrl = env('APP_URL') . '/api/cancel/'. $vnp_TxnRef ;
+        $cancelUrl = env('APP_URL') . '/api/cancel/'. $vnp_TxnRef .'/1';
         if ($vnp_ResponseCode == '00') {
             $order = Orders::find($vnp_TxnRef);
             $order->status = 1;
-            $order->updated_at = Carbon::now();
+            $order->updated_at = Carbon::now()->setTimezone('Asia/Ho_Chi_Minh');
 
             $order->products = json_decode($order->products, true);
 
@@ -202,11 +202,12 @@ class VnpayController extends Controller
 
                 $product->check_quantity -= $quantity;
                 if($product->check_quantity < 0){
+                    $cancelUrl = env('APP_URL') . '/api/cancel/'. 0 .'/2' ;// thông báo hết hàng
                     $product->check_quantity = 0;
                     $order ->is_done = 4;
                     $order->save();
                     $product->save();
-                    return Redirect::to($successUrl); // thông báo hết hàng
+                    return Redirect::to($cancelUrl); // thông báo hết hàng
                 }
                 $product->save();
             }
@@ -216,6 +217,14 @@ class VnpayController extends Controller
         } else {
             $order = Orders::find($vnp_TxnRef);
             //xoá order
+            $order->products = json_decode($order->products, true);
+            foreach($order->products as $product){
+                $product_id = (int) $product['product_id'];
+                $quantity = $product['quantity'];
+                $product = Products::where('id', $product_id)->first();
+                $product->quantity += $quantity;
+                 $product->save();
+            }
             $order->delete();
 
             return Redirect::to($cancelUrl );

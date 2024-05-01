@@ -405,11 +405,12 @@
                 var is_show_val = $('#is_show').val();
                 var add_quatity = $('input[name="add_quatity"]').val();
                 var file = $('#file').prop('files');
+
                 var formData = new FormData();
                 formData.append('product_name', product_name);
                 formData.append('category_id', category_id);
                 formData.append('promotion_id', promotion_id);
-                formData.append('add_quatity', add_quatity);
+                formData.append('add_quantity', add_quatity);
                 formData.append('images',images); // images hiện tại là kiểu mảng nhưng mà gửi qua ajax thì nó sẽ thành dạng string nên bên controller phải dùng explode để chuyển về mảng mới thêm vào được
 
                 for (let i = 0; i < file.length; i++) {
@@ -419,6 +420,8 @@
                 formData.append('price', price);
 
                 formData.append('is_show', is_show_val);
+
+                console.log(add_quatity);
                 $.ajax({
                     url: '/products/update/' + product.id,
                     type: 'post',
@@ -426,11 +429,12 @@
                     contentType: false,
                     processData: false,
                     success: function(response) {
-                        alert('Cập nhật sản phẩm thành công');
+                        // alert('Cập nhật sản phẩm thành công');
                         window.location.reload();
                     },
                     error: function(response) {
-                        alert(response.responseJSON.message);
+                        // alert(response.responseJSON.message);
+                        toarst.error(response.responseJSON.message);
                     }
                 });
             })

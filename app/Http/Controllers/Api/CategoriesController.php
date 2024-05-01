@@ -17,7 +17,7 @@ class CategoriesController extends Controller
      */
     public function index()
     {
-       $result['info'] = DB::table('categories')->get()->toArray();
+       $result['info'] = DB::table('categories')->paginate(10);
        return view('page.category', $result);
     }
 

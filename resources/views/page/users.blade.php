@@ -64,7 +64,7 @@
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="ms-2">
-                                        <h6 class="mb-0 font-14"><?= $stt++?></h6>
+                                        <h6 class="mb-0 font-14">{{$item ->id}}</h6>
                                     </div>
                                 </div>
                             </td>
@@ -114,6 +114,7 @@
 
                     </tbody>
                 </table>
+                {{$info->links()}}
             </div>
             <!-- Add New User -->
             <div class="modal fade" id="addUser" tabindex="0" aria-labelledby="addUser" aria-hidden="true">

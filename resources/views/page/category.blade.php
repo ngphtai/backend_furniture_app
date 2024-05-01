@@ -52,14 +52,14 @@
                         <tbody id="search_list">
                             {{-- trả về kết quả tìm kiếm --}}
                         </tbody>
-                        <?php $stt =1 ?>
+                        {{-- <?php $stt =1 ?> --}}
                         <tbody id = "alldata">
                            @foreach ($info as $item )
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="ms-2">
-                                            <h6 class="mb-0 font-14"><?= $stt++?></h6>
+                                            <h6 class="mb-0 font-14">{{$item ->id}}</h6>
                                         </div>
                                     </div>
                                 </td>
@@ -82,9 +82,9 @@
                                 </td>
                             </tr>
                            @endforeach
-
                         </tbody>
                     </table>
+                    {{$info->links()}}
                 </div>
                 <!-- Add New Product -->
                 <div class="modal fade" id="addCategory" tabindex="0" aria-labelledby="addCategory" aria-hidden="true">

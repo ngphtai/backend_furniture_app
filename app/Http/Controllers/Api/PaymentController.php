@@ -39,10 +39,10 @@ class PaymentController extends Controller
         foreach($products as $prorduct ){
             $product = Products::where('id', $prorduct->product_id)->first();
             if(empty($product)){
-                return response()->json(['message' => 'Product not found'], 404);
+                return response()->json(['data' => 'Product not found'], 200);
             }
             if($prorduct->quantity > $product->quantity){
-                return response()->json(['message' => 'Product not enough quantity'], 404);
+                return response()->json(['data' => 'Product not enough quantity'], 200);
             }
         }
           //trừ số lượng sp mới mua trong kho
@@ -100,12 +100,12 @@ class PaymentController extends Controller
 
         $total_price = $request->total_price;
         $products = json_decode($request->products);
-        $cancelUrl = env('APP_URL') . '/api/cancel/'. 0;
+        $cancelUrl = env('APP_URL') . '/api/cancel/'. 0 ;
         if(is_array($products) == false){
             return response()->json([
                 'code'=> 200,
                 'message' => 'success',
-                'data' => $cancelUrl,
+                'data' => $cancelUrl .'/0',
             ]);
         }
         //with array product
@@ -117,14 +117,14 @@ class PaymentController extends Controller
                 return response()->json([
                     'code'=> 200,
                     'message' => 'product not found',
-                    'data' => $cancelUrl,
+                    'data' => $cancelUrl .'/0',
                 ]);
             }
             if($item->quantity > $product->quantity){
                 return response()->json([
                     'code'=> 200,
                     'message' => 'product not enough quantity',
-                    'data' => $cancelUrl,
+                    'data' => $cancelUrl .'/2',
                 ]);
             }
         }
@@ -160,7 +160,7 @@ class PaymentController extends Controller
         $map['status'] = 0;
         $map['note'] = $request->note?? '';
         $map['is_done'] = 0;
-        $map['created_at'] = Carbon::now();
+        $map['created_at'] = Carbon::now()->setTimezone('Asia/Ho_Chi_Minh');
 
         $oderNum = Orders::insertGetId($map);// tạo order mới và lấy id của order mới tạo ra
 
@@ -180,7 +180,7 @@ class PaymentController extends Controller
         }
 
         $successUrl = env('APP_URL') . '/api/success/' . $oderNum;
-        $cancelUrl = env('APP_URL') . '/api/cancel/'. $oderNum;
+        $cancelUrl = env('APP_URL') . '/api/cancel/'. -1 .'/3';
         $CheckOutSession = Session::create([
             'payment_method_types' => ['card'],
              // tạo ra mảng line_items từ danh sách sản phẩm trong order
@@ -225,6 +225,7 @@ class PaymentController extends Controller
 
 
     public function webGoHook(){
+
         Log::info('starts here.....');
         Stripe::setApiKey('sk_test_51P2UjyAPHtNagExbA9nGuoC0h27gTg6QrvxZMATX4sokQKSFm5LsI0NOyTV88MuzMTS5VYplHw2WrAaDx5hY6D8j0023bMUQ1r');
         $endPointSecret = 'whsec_wVOVMhS6FMIH9PeNBbpFkpZDpTR4WVAZ';
@@ -263,7 +264,10 @@ class PaymentController extends Controller
             $order = Orders::where($map)->first();
             //update
             $order->status = 1;
-            $order->updated_at = Carbon::now();
+            $order->updated_at = Carbon::now()->setTimezone('Asia/Ho_Chi_Minh');
+
+            $cancelUrl = env('APP_URL') . '/api/cancel/'. $order_id . '/2';
+
             //kiểm tra sản phẩm còn đủ số lượng không ( tránh nhiều người đặt cùng lúc và thiếu sản phẩm)
 
             $order->products = json_decode($order->products, true);
@@ -280,7 +284,10 @@ class PaymentController extends Controller
                     $order ->is_done = 4;
                     $order->save();
                     $product->save();
-                    return response()->json(['message' => 'Product not enough quantity'], 404);
+                    return response()->json([
+                        'code'=> 200,
+                        'data' => $cancelUrl,
+                    ]);
                 }
                 $product->save();
             }
@@ -318,8 +325,28 @@ class PaymentController extends Controller
             $map['id'] = $order_id;
             $map['user_id'] = $user_id;
             $order = Orders::where($map)->first();
-            //delete order
-            $order->delete();
+                if($order)
+                {
+                    $order->products = json_decode($order->products, true);
+                    foreach($order->products as $product){
+                        $product_id = (int) $product['product_id'];
+                        $quantity = $product['quantity'];
+
+                        $product = Products::where('id', $product_id)->first();
+
+                        $product->quantity += $quantity;
+                        $product->save();
+                    }
+                    //delete order
+                    $order->delete();
+                }
+                else {
+                    return response()->json([
+                        'code'=> 400,
+                        'data' => 'order not found',
+                    ]);
+                }
+
 
             Log::info('end here.....');
         }
@@ -390,7 +417,5 @@ class PaymentController extends Controller
                 }
             }
         }
-
-
     }
 }

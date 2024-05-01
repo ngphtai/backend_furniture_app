@@ -10,14 +10,15 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Promotions;
 use App\Models\Colors;
 
+use function PHPUnit\Framework\isEmpty;
 
 class ProductsController extends Controller
 {
 
     public function index()
     {
-        $result['info'] = DB::table('products')->paginate(15);
-        $result['colors'] = DB::table('colors')->get()->toArray();
+        $result['info'] = Products::with('promotion', 'category')->paginate(10);
+        $result['colors'] = DB::table('colors')->get();
         return view('page.product')-> with($result);
     }
     public function detail1(Request $request){
@@ -99,13 +100,17 @@ class ProductsController extends Controller
             'price' => 'nullable|numeric|min:0',
             'is_show' => 'nullable|boolean',
         ]);
-
+        if($request->product_name == null && $request->category_id == null && $request->promotion_id == null && $request->add_quantity == 0 && $request->images == null && $request->description == null && $request->price == null && $request->is_show == null){
+            toastr()->error('Không có dữ liệu để cập nhật');
+            return response()->json(['message' => 'No data to update'], 400);
+        }
         $product = Products::findOrFail($id);
         $product -> product_name = $request->product_name?? $product->product_name;
         $product -> category_id = $request->category_id?? $product->category_id;
         $product -> promotion_id = $request->promotion_id?? $product->promotion_id;
         $product -> description = $request->description?? $product->description;
         $product -> quantity = $product->quantity + $request->add_quantity;
+        $product -> check_quantity = $product->check_quantity + $request->add_quantity;
         $product -> price = $request->price?? $product->price;
         $product -> is_show = $request->is_show?? $product->is_show;
 
@@ -135,8 +140,8 @@ class ProductsController extends Controller
         }
 
         $product->fill($productData)->save();
-        session()->flash('success', 'Product updated successfully');
-        return redirect()->route('product.index');
+        session()->flash('success', 'Cập nhật thành công thông tin sản phẩm');
+        return response()->json(['message' => 'Product updated successfully'], 200);
     }
 
 

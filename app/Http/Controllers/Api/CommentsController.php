@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 class CommentsController extends Controller
 {
     public function index(){
-        $result['info']  = Comments::with('user', 'product')->get();
+        $result['info']  = Comments::with('user', 'product')->paginate(10);
         $result['keys'] = json_decode(ForbiddenKeywords::first()->keyword);
         return view('page.comment')-> with($result);
     }
@@ -101,8 +101,7 @@ class CommentsController extends Controller
         if($request->ajax() && $request->search != ""){
             $data=Comments::where('content','like','%'.$request->search.'%')->get();
             if(count($data)>0){
-                $item = Comments::with('user')->get();
-                $item = Comments::with('product')->get();
+                $item = Comments::with('user','product')->get();
                 foreach ($data as $item ){
                     $output .='  <tr>
                                     <td>
@@ -117,14 +116,29 @@ class CommentsController extends Controller
                     $output .='
                                     <td>'.
                                         // optional($item->user)->name
-                                        $item -> user_id
+                                        $item -> user-> name
                                         .'</td>
                                     <td>'.$item -> order_id.'</td>
                                     <td>'.
                                      // optional($item->product())->product_name
-                                        $item -> product_id
+                                        $item->product->product_name = \Illuminate\Support\Str::limit($item->product->product_name, 15, '...', 5)
                                    .'</td>
-                                    <td>'.$item -> rating.'</td>
+                                    <td>'.$item -> rating . '' ;
+                                    foreach(range(1,5) as $i) {
+                                        $output .= '<span class="fa-stack" style="width:1em">';
+                                        $output .= '<i class="far fa-star fa-stack-1x text-warning"></i>';
+
+                                        if($item->rating > 0) {
+                                            if($item->rating > 0.5) {
+                                                $output .= '<i class="fas fa-star fa-stack-1x text-warning"></i>';
+                                            } else {
+                                                $output .= '<i class="fas fa-star-half fa-stack-1x text-warning"></i>';
+                                            }
+                                        }
+
+                                        $output .= '</span>';
+                                    }
+                                    $output .= '</td>
                                     <td class="mb-2">
                                         <h5 style=" font-size: 15px" >
                                         ';

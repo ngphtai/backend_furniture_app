@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\api;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -14,40 +14,26 @@ class OrdersController extends Controller
 {
     public function index()
     {
-        $orders = Orders::with('user')-> get();
-        $orders = Orders::where('is_done', 0)->orderBy('created_at')->get();
-
-        $info = $orders ;
-
+        $info = Orders::with('user')->where('is_done', 0)->orderBy('created_at', 'desc')-> paginate(15);
 
         return view('page.orders', compact('info'));
     }
     public function index_1()
     {
-        $orders = Orders::with('user')-> get();
-        $orders = Orders::where('is_done', 1)->orderBy('created_at')->get();
-
-        $info = $orders ;
-
-
+        $info = Orders::with('user')-> get();
+        $info = Orders::where('is_done', 1)->orderBy('created_at', 'desc')-> paginate(15);
         return view('page.orders', compact('info'));
     }
     public function index_2()
     {
-        $orders = Orders::with('user')-> get();
-        $orders = Orders::where('is_done', 2)->orderBy('created_at')->get();
-
-        $info = $orders ;
-
-
+        $info = Orders::with('user')-> get();
+        $info = Orders::where('is_done', 2)->orderBy('created_at', 'desc')-> paginate(15);
         return view('page.orders', compact('info'));
     }
     public function index_3()
     {
-        $orders = Orders::with('user')-> get();
-        $orders = Orders::where('is_done', 3)->orderBy('created_at')->get();
-
-        $info = $orders ;
+        $info = Orders::with('user')-> get();
+        $info = Orders::where('is_done', 3)->orderBy('created_at', 'desc')-> paginate(15);
 
 
         return view('page.orders', compact('info'));
@@ -55,29 +41,24 @@ class OrdersController extends Controller
 
     public function index_4()
     {
-        $orders = Orders::with('user')-> get();
-        $orders = Orders::where('is_done', 4)->orderBy('created_at')->get();
-
-        $info = $orders ;
-
+        $info = Orders::with('user')-> get();
+        $info = Orders::where('is_done', 4)->orderBy('created_at', 'desc')-> paginate(15);
 
         return view('page.orders', compact('info'));
     }
 
     public function index_5()
     {
-        $orders = Orders::with('user')-> get();
-        $orders = Orders::where('is_done', -1)->orderBy('created_at')->get();
-
-        $info = $orders ;
+        $info = Orders::with('user')-> get();
+        $info = Orders::where('is_done', -1)->orderBy('created_at', 'desc')-> paginate(15);
 
 
         return view('page.orders', compact('info'));
     }
     public function index_6()
     {
-        $orders = Orders::with('user')-> get();
-        $info = $orders ;
+        $info = Orders::with('user')->orderBy('created_at', 'desc')-> paginate(15);
+
         return view('page.orders', compact('info'));
     }
 
@@ -230,7 +211,6 @@ class OrdersController extends Controller
         // }
 
         $orders = $ordersrequest->get();
-
         // return $orders->isEmpty() ? response()->json($orders, 200) : addEmail($orders);
         return response()->json($orders);
 
@@ -265,7 +245,7 @@ class OrdersController extends Controller
         if($orders->isEmpty())
             return response()->json(['message' => 'Not found'], 404);
 
-        return response()->json($orders);
+        return response()->json(['data' => $orders], 200);
     }
 
     public function success(String $id){
@@ -276,10 +256,21 @@ class OrdersController extends Controller
 
 
     }
-    public function cancel(String $id){
-        $order = Orders::where('id', $id)->first();
-        if($order!= null)
-            $order->delete();
+    public function cancel(String $id,String $error){
+        if($id != -1){
+            $order = Orders::where('id', $id)->first();
+            if($order!= null)
+                $order->delete();
+        }
+        if($error == '1')
+            return view('page.order.order_failed', ['error' => 'Thanh toán thất bại']);
+        else if($error == '2')
+            return view('page.order.order_failed', ['error' => 'Sản phẩm đã hết hàng']);
+        else if($error == '3')
+            return view('page.order.order_failed', ['error' => 'Đã Huỷ thanh toán']);
+        else
+            return view('page.order.order_failed', ['error' => 'Có lỗi xảy ra trong quá trình thanh toán']);
+
         return view('page.order.order_failed');
     }
 }
