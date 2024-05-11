@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ForbiddenKeywords;
 use App\Models\Comments;
+use App\Models\Users;
+use App\Models\Products;
 
 use Illuminate\Support\Facades\DB;
 
@@ -99,7 +101,8 @@ class CommentsController extends Controller
         $output ="";
         $stt = 1;
         if($request->ajax() && $request->search != ""){
-            $data=Comments::where('content','like','%'.$request->search.'%')->get();
+            // $data=Comments::where('content','like','%'.$request->search.'%')->get();
+            $data = Comments::with('user')->where('content','like','%'.$request->search.'%')->get();
             if(count($data)>0){
                 $item = Comments::with('user','product')->get();
                 foreach ($data as $item ){
@@ -150,7 +153,7 @@ class CommentsController extends Controller
 
             }
             else{
-                $output .='<div class="alert   alert-danger">Không tìm thấy khuyến mãi nào</div>';
+                $output .='<div class="alert   alert-danger">Không tìm thấy bình luận nào</div>';
             }
             return $output;
         }
@@ -158,7 +161,6 @@ class CommentsController extends Controller
 
     //API
     public function create(Request $request){
-        try{
             $request->validate([
                 'order_id' => 'required',
                 'user_id' => 'required',
@@ -167,37 +169,56 @@ class CommentsController extends Controller
                 'content' => 'required| string | max:350',
             ]);
 
+            $id = Users::where('uid', $request->user_id)->first()->id;
             $bannedKey =  json_decode(ForbiddenKeywords::first()->keyword);
             foreach($bannedKey as $key){
-                if(str_contains($request->content, $key) == true){
+
+                if(mb_stripos($request->content, $key) !== false){
                     return response()->json([
                         'message' => 'Comment has a forbidden: '.$key
-                    ],500);
+                    ], 200);
                 }
             }
+            $order = DB::table('orders')->where('id', $request->order_id)->first();
+            foreach(json_decode($order->products) as $product){
+                if($product->product_id == $request->product_id){
+                    $id = Users::where('uid', $request->user_id)->first()->id;
+                    $comment = Comments::where('order_id', $request->order_id)->where('product_id', $request->product_id)->where('user_id',$id)->first();
+                    if($comment != null){
+                        return response()->json([
+                            'message' => 'Comment already exists'
+                        ], 200);
+                    }
+                }
+            }
+
             $comment = new Comments();
             $comment->order_id = $request->order_id;
-            $comment->user_id = $request->user_id;
+            $comment->user_id = $id;
             $comment->product_id = $request->product_id;
             $comment->rating = $request->rating;
             $comment->content = $request->content;
+
+            $product = Products::where('id', $request->product_id)->first();
+            $total_rated = Comments::where('product_id', $request->product_id)->count();
+            $product->rating_count = ($product->rating_count* $total_rated + $request->rating) / ($total_rated + 1);
+            $product->save();
+
             $comment->save();
 
             return response()->json([
-                'message' => 'Comment added successfully'
+                'message' => 'success'
             ],200);
-        }catch(\Exception $e){
-            return response()->json([
-                'message' => 'Error: '.$e->getMessage()
-            ],500);
-        }
     }
 
     public function show(Request $request){
-            $comments = Comments::where('product_id', $request ->product_id)->get();
+        $request->validate([
+            'product_id' => 'required'
+        ]);
+            $comments = Comments::where('product_id', $request->product_id)->with('user')->get();
             if(count($comments) == 0){
                 return response()->json([
-                    'data' => 'No comments found'
+                    'message' => 'No comments found', 'data' => []
                 ],200);
             }
             return response()->json([

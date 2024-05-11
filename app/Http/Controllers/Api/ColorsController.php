@@ -41,7 +41,7 @@ class ColorsController extends Controller
             if(!is_null($color) ){
                 $color->color_name = $request->color_name;
                 $color->save();
-                session()->flash('success', 'Chỉnh sửa màu thành công');
+                toastr()->success('Chỉnh sửa màu thành công');
                 return redirect() -> route('product.index');
             }else {
                 $color = new Colors();
@@ -50,7 +50,7 @@ class ColorsController extends Controller
                 $color->save();
             }
 
-            session()->flash('success', 'Thêm màu thành công');
+            toastr()->success( 'Thêm màu thành công');
             return redirect() -> route('product.index');
             // return response()->json(['success' => 'Thêm màu thành công']);
 

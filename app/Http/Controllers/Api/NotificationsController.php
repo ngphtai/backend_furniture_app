@@ -35,10 +35,10 @@ class NotificationsController extends Controller
     public function show(Request $request)
     {
         try{
-            $notifications = Notifications::where('user_id', $request-> id)->orderBy('created_at', 'desc')->get();
-            return response()->json(['notifications' => $notifications], 200);
+            $notifications = Notifications::where('user_id', $request-> uid)->orderBy('created_at', 'desc')->get();
+            return response()->json(['data' => $notifications], 200);
         }catch(\Exception $e){
-            return response()->json(['message' => 'An error occurred while processing your request'], 500);
+            return response()->json(['data' => 'An error occurred while processing your request'], 500);
         }
     }
 

@@ -80,15 +80,16 @@
                             </td>
 
                             <td>{{$item -> email}}</td>
-                            <td>  @if($item -> address == null )
-                                    {{'trống'}}
-                                @else{
+                            <td>
+                                @if($item->address == null)
+                                    {{ 'trống' }}
+                                @else
                                     {{ Str::limit($item->address, 10, '') }}<br>
                                     @if (strlen($item->address) > 10)
-                                    {{ Str::substr($item->address, 10) }}
+                                        {{ Str::substr($item->address, 10) }}
                                     @endif
-                                }
                                 @endif
+
                             </td>
                             <td>{{$item -> phone_number ??  "trống"}}</td>
                             <td>{{$item -> user_type}}</td>
@@ -161,6 +162,7 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>

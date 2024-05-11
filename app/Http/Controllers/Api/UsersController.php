@@ -13,12 +13,11 @@ class UsersController extends Controller
 {
 
     public function Profile(){
-        // $result['info'] = DB::table('users')->where('user_type','admin' )->get()->toArray();
         return view('page.admin_detail') ;
     }
 
     public function index(){
-        $result['info'] = DB::table('users')->paginate(15);
+        $result['info'] = DB::table('users')->paginate(10);
         return view('page.Users', $result);
     }
 
@@ -28,9 +27,17 @@ class UsersController extends Controller
             $this->validate($request, [
                 'uid' => 'required',
                 'name' => 'required',
-                'email' => 'required|email', // Added email validation
+                'email' => 'required|email| unique:users,email',
                 'password' => 'required',
                 'user_type' => 'required',
+            ],[
+                'uid.required' => 'Vui lòng nhập mã nhân viên',
+                'name.required' => 'Vui lòng nhập tên nhân viên',
+                'email.required' => 'Vui lòng nhập email',
+                'email.email' => 'Email không hợp lệ',
+                'password.required' => 'Vui lòng nhập mật khẩu',
+                'user_type.required' => 'Vui lòng chọn loại tài khoản',
+                'email.unique' => 'Email đã tồn tại',
             ]);
 
             $currentUser = auth()->guard('ANNTStore')->user();
@@ -55,7 +62,7 @@ class UsersController extends Controller
 
         } catch (\Exception $e) {
             toastr()->error('Thêm tài khoản thất bại: ' . $e->getMessage());
-            return response()->json(['message' => 'Error creating user', 'error' => $e->getMessage()], 400);
+            return redirect()->route('user.index');
         }
     }
 
@@ -75,7 +82,7 @@ class UsersController extends Controller
             }
         }catch(\Exception $e){
             toastr()->error('Thao tác thất bại: ' . $e->getMessage());
-            return response()->json(['message' => 'Error creating user', 'error' => $e->getMessage()], 400);
+            return redirect()->route('user.index');
         }
 
     }
@@ -154,7 +161,8 @@ class UsersController extends Controller
 
 
     public function bam(Request $request){
-        $pass =  bcrypt($request ->pass);
+        $user = Users::where('uid', $request->uid)->first();
+        $pass = password_hash($user->password, PASSWORD_DEFAULT);
         return response()->json(['message' => 'User updated successfully', 'user' => $pass], 200);
     }
 
@@ -164,11 +172,9 @@ class UsersController extends Controller
             'oldPass' => 'required',
             'newPass' => 'required',
         ]);
+        return "oldPass" + $request->oldPass +" + "+ "newPass" + $request->newPass;
         $user = Users::where('uid', $request->uid)->first();
-        if (!$user) {
-            toastr()->error('Email không tồn tại');
-            return response()->json(['message' => 'Email không tồn tại'], 400);
-        }
+
         if (!password_verify($request->oldPass, $user->password)) {
             toastr()->error('Mật khẩu cũ không chính xác');
             return response()->json(['message' => 'Mật khẩu cũ không chính xác'], 400);
@@ -184,26 +190,27 @@ class UsersController extends Controller
         try {
             $request->validate([
                 'uid' => 'required',
-                'name' => 'nullable',
+                'name' => 'required',
                 'file' => 'nullable| image| mimes:jpeg,png,jpg,gif,wepb',
-                'address' => 'nullable',
-                'phone_number' => 'nullable|min:10|max:10|regex:/^0[^0][0-9]{8}$/',
-                'email' => 'nullable|email|unique:users,email,' . $request->uid . ',uid',
+                'phone_number' => 'required|min:10|max:10|regex:/^0[^0][0-9]{8}$/',
+
                 // 'password' => 'nullable',
             ], [
+                'name.required' => 'Tên không được để trống',
                 'phone_number.regex' => 'Số điện thoại không hợp lệ',
-                'phone_number.min' => 'Số điện thoại không hợp lệ',
-                'phone_number.max' => 'Số điện thoại không hợp lệ',
-                'phone_number.required' => 'Số điện thoại không hợp lệ',
-                'email.email' => 'Email không hợp lệ',
-                'email.unique' => 'Email đã tồn tại',
+                'phone_number.min' => 'Số điện thoại phải có 10 số',
+                'phone_number.max' => 'Số điện thoại phải có 10 số',
+                'phone_number.required' => 'Số điện thoại không được để trống',
                 'file.image' => 'Avatar không hợp lệ',
             ]);
+
+
 
             $user = Users::where("uid", $request->uid)->first();
             if (!$user) {
                 throw new \Exception('User not found');
             }
+
 
             $user->name = $request->name;
             $user->address = $request->address;

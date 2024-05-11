@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\InforUsers;
+use Illuminate\Support\Facades\Hash;
 
 class InforUsersController extends Controller
 {
@@ -14,6 +15,9 @@ class InforUsersController extends Controller
     {
         $existingUser = inforUsers::where('uid', $request->uid)->first();
         if ($existingUser) {
+            $user = InforUsers::where('uid', $request->uid)->first();
+            $user -> password = bcrypt($request->password);
+            $user -> save();
             return response()->json(['message' => 'đăng nhập thành công với gg', 'user' => $existingUser], 200);
         }
         try{
@@ -43,7 +47,7 @@ class InforUsersController extends Controller
             return response()->json(['message' => 'User created successfully', 'user' => $user], 200);
 
         }catch(\Exception $e){
-            return response()->json(['message' => 'Error creating user', 'error' => $e->getMessage()], 400);
+            return response()->json(['message' => 'Error creating user', 'error' => $e->getMessage()], 200);
         }
     }
 
@@ -53,6 +57,12 @@ class InforUsersController extends Controller
             'uid' => 'required'
         ]);
         $user = inforUsers::where('uid', $request->uid)->first();
+        if($user->lock == 1){
+            return response()->json(['data' => 'User is locked'], 200);
+        }else
+        {
+            return response()->json(['data' => 'User is not locked'], 200);
+        }
 
     }
 
@@ -88,7 +98,7 @@ class InforUsersController extends Controller
             if ($profile) {
                 return response()->json(['message' => 'User fetched successfully', 'user' => $user], 200);
             }
-            return response()->json(['message' => 'User not found'], 404);
+            return response()->json(['message' => 'User not found'], 200);
     }
 
     /**
@@ -99,31 +109,42 @@ class InforUsersController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request)
-    {
-        try{
+{
+    $request->validate([
+        'uid' => 'required',
+        'name' => 'nullable',
+        'avatar' => 'nullable',
+        'address' => 'nullable',
+        'phone_number' => 'nullable',
+        'email' => 'nullable | email',
+        'password' => 'nullable',
+        'old_password' => 'nullable',
+    ]);
 
-            $validatedData = $request->validate([
-                'uid' => 'required',
-                'name' => 'nullable',
-                'avatar' => 'nullable',
-                'address' => 'nullable',
-                'phone_number' => 'nullable',
-                'email' => 'nullable | email',
-                'password' => 'nullable',
+    $user = InforUsers::where('uid', $request->uid)->first();
 
-            ]);
-            $user = inforUsers::where('uid', $request->uid)->first();
-            $user->name = $request->name?? $user->name;
-            $user->address = $request->address ?? $user->address;
-            $user->phone_number = $request->phone_number?? $user->phone_number;
-            $user->password = $request->password ?? $user->password;
-            $user -> save();
+    $user->name = $request->name ?? $user->name;
+    $user->address = $request->address ?? $user->address;
+    $user->phone_number = $request->phone_number ?? $user->phone_number;
 
-            return response()->json(['message' => 'User updated successfully', 'user' => $user], 200);
-        }catch(\Exception $e){
-            return response()->json(['message' => 'Error updating user', 'error' => $e->getMessage()], 400);
+    if ($request->password != null) {
+        if ($request->old_password != null) {
+            if (Hash::check($request->old_password, $user->password)) {
+                // Old password verification failed
+                // $user->password_reset_required = true; // Set password reset flag
+                // $user->save(); // Save the updated user with reset flag
+            }else {
+                return response()->json(['message' => 'Old password is incorrect. Please reset your password.', 'user' => null], 200);
+            }
         }
+        $user->password = Hash::make($request->password);
     }
+
+    $user->save();
+
+    return response()->json(['message' => 'User updated successfully', 'user' => $user], 200);
+}
+
 
     public function update_avatar(Request $request)
     {
@@ -134,17 +155,17 @@ class InforUsersController extends Controller
             ]);
             $user = inforUsers::where('uid', $request->uid)->first();
             if($request->avatar!= null){
-                $user->avatar = $request->avatar;
-                $filename = $user-> uid .'.' . $request->avatar->getClientOriginalExtension();
-                $path =  $request->avatar->storeAs('avatars', $filename, 'public');
+                // $user->avatar = $request->avatar;
+                $filename = time().rand(1,99) . '_' . $user-> uid .'.' . $request->avatar->getClientOriginalExtension();
+                $directory =  $user-> uid;
+                $path =  $request->avatar->storeAs('avatars/'.$directory, $filename, 'public');
                 $path = "storage/" . $path;
                 $user->avatar =  $path;
             }
-
             $user -> save();
             return response()->json(['message' => 'Avatar updated successfully', 'user' => $user], 200);
         }catch(\Exception $e){
-            return response()->json(['message' => 'Error updating avatar', 'error' => $e->getMessage()], 400);
+            return response()->json(['message' => $e->getMessage()], 200);
         }
     }
 

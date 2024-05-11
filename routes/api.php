@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\VnpayController;
 use App\Http\Controllers\Api\InforUsersController;
 use App\Http\Controllers\Api\OrdersController;
+use App\Http\Controllers\Api\RefundRequestController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -41,26 +42,26 @@ Route::post('/products/show', [ProductsController::class, 'show']); // detail pr
 Route::post('/products/search', [ProductsController::class, 'search']);
 
 //user
-Route::post('/users/update_avatar', [InforUsersController::class, 'update_avatar']);
+Route::any('/users/update_avatar', [InforUsersController::class, 'update_avatar']);
 Route::post('/users/create', [InforUsersController::class, 'create']);
 Route::post('/users/profile', [InforUsersController::class, 'show']);
 Route::post('/users/update_profile', [InforUsersController::class, 'update']);
 Route::post('/users/checklock', [InforUsersController::class, 'checklock']);
-// Route::get('bam', [UsersController::class, 'bam']);
+Route::get('bam', [UsersController::class, 'bam']);
 
 //cart
 // Route::post('/carts/add', [CartController::class, 'add']);
 Route::post('/carts/add', [CartController::class, 'addToCart']);
 Route::post('/carts/update', [CartController::class, 'update']);
-Route::post('/carts/show/', [CartController::class, 'get']);
+Route::post('/carts/show', [CartController::class, 'get']);
 Route::post('/carts/delete/', [CartController::class, 'delete']);
 Route::post('/carts/checkout', [CartController::class, 'afterCheckout']);
 
 
 //comment
 Route::post('/comments/create', [CommentsController::class, 'create']);
-Route::post('/comments/show/', [CommentsController::class, 'show']);
-Route::post('/comments/delete/', [CommentsController::class, 'delete']);
+Route::post('/comments/show', [CommentsController::class, 'show']);
+Route::post('/comments/delete', [CommentsController::class, 'delete']);
 
 
 //Notification
@@ -85,11 +86,19 @@ Route::post('payment-direct', [PaymentController::class, 'direct']);
 //Orders
 Route::post('/orders/allByUid', [OrdersController::class, 'allByUid']);
 Route::post('/orders/show/', [OrdersController::class, 'updatedone']);
+Route::post('/orders/refund/', [OrdersController::class, 'refund']);
+Route::post('/orders/cancel/', [OrdersController::class, 'canncelOrder']);
 Route::any('/search', [OrdersController::class, 'search']);
 Route::any('/success/{id}',[OrdersController::class, 'success']);
 Route::any('/cancel/{id}/{error}',[OrdersController::class, 'cancel']);
-//test
+Route::any('/cancelv2/{id}/{error}',[OrdersController::class, 'cancelv2']);
 
+Route::any('/orders/cancel', [RefundRequestController::class, 'cancelOrder']);
+// Route::any('/searchRequest', [RefundRequestController::class, 'search']);
+
+
+//test
+Route::any('/test',[PaymentController::class, 'aftercheckout']);
 
 
 

@@ -47,7 +47,7 @@
                         </div>
                         <div class="gap-3">
                             <div class="dropdown">
-                                <button id="filterIsDone" class="btn btn-outline-primary" type="button" data-bs-toggle="dropdown" aria-expanded="false">Trạng thái</button>
+                                <button id="filterIsDone" class="btn btn-outline-primary" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="display: none;">Trạng thái</button>
                                     <ul class="dropdown-menu">
                                         <li><a class="badge text-success bg-light-success p-2 text-uppercase px-3 rounded-0 dropdown-item" href="#" onclick="changeTrangthai('Hoàn thành')">Hoàn thành</a></li>
                                         <li><a class="badge rounded-0 text-info bg-light-info p-2  text-uppercase px-3 dropdown-item" href="#" onclick="changeTrangthai('Đang giao')">Đang giao</a></li>
@@ -60,13 +60,18 @@
                             </div>
                         </div>
                         <div class="gap-3">
-                            <input id= "start_date"  type="text" class="form-control datepicker" placeholder="Từ ngày"/>
+                            <input id= "start_date"  type="text" class="form-control datepicker" style="width:150px" placeholder="Từ ngày"/>
                         </div>
                         <div class="gap-3">
-                            <input id="end_date" type="text" class="form-control datepicker" placeholder="Đến ngày"/>
+                            <input id="end_date" type="text" class="form-control datepicker" style="width:150px" placeholder="Đến ngày"/>
                         </div>
                         <div class="gap-3">
                             <button id="butotn-search" type="button" class="btn btn-info px-3  radius-30">Tìm kiếm</button>
+                        </div>
+                        <div class="gap-3">
+                            <a href='{{route('order.approve')}}' id = "approveRefund" class="btn btn-primary radius-30 mt-2 mt-lg-0" style="display:none" >
+                                Duyệt hoá đơn
+                            </a>
                         </div>
                 </div>
                 <div class="table-responsive">
@@ -92,7 +97,6 @@
                             @endif
                             @php
                                 // sắp xếp từ mới tới cũ theo ngày
-
                             @endphp
                             @foreach ($info as $item )
                             <tr >
@@ -133,10 +137,10 @@
                                  @elseif($item-> is_done == -1 )
                                     <td><div class="badge rounded-pill text-white bg-dark  p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>Từ chối</div></td>
                                 @endif
-                                <td><div type="button" class="detail-btn btn btn-primary btn-sm radius-30 px-4" id={{$item->id}} data-bs-toggle="modal" data-bs-target="#viewDetails">Xem chi tiết</div></td>
+                                <td><button type="button" class="detail-btn btn btn-primary btn-sm radius-30 px-4" id={{$item->id}} onclick ="addDetailBtnEvent({{$item->id}})" data-bs-toggle="modal" data-bs-target="#viewDetails">Xem chi tiết</button></td>
                                 <td>
                                     <div class="d-flex order-actions">
-                                        <a href="{{ 'toPDF/'. $item ->id}}" class=""><i class='bx bxs-file-export'></i></a>
+                                        <a href="{{ route('order.toPDF', ['id' => $item->id]) }}" class=""><i class='bx bxs-file-export'></i></a>
                                         {{-- <a href="{{ route('order.update-is-done', ['id' => $item->id]) }}" onclick="return confirm('Bạn có chắc chắn muốn cập nhật tình trạng sản phẩm?')" class="ms-3"><i class='bx bx-check'></i></a> --}}
                                     </div>
                                     </div>
@@ -265,6 +269,7 @@
         </div>
 
 
+
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -282,11 +287,10 @@
         var url = window.location.pathname;
         //kiểm tra kí tự cuối của chuỗi url
         var lastChar = parseInt( url.substr(url.length - 1));
-        if(lastChar>=0 && lastChar<=5)
-            $('#filterIsDone').hide();
-
-
-
+        if(lastChar==6)
+            $('#filterIsDone').show();
+        if(lastChar==4)
+            $('#approveRefund').show();
     });
 </script>
 
@@ -389,192 +393,6 @@
     });
     $('.timepicker').pickatime();
 </script>
-
-<script>
-    $(document).ready(function(){
-        $('.detail-btn').click(function(event){
-            event.preventDefault();
-            var id = $(this).attr('id');
-            // alert(id);
-            // alert('check data');
-            // get data from database
-            $.ajax({
-                url: "{{route('order.detail')}}",
-                type: "GET",
-                data: {id: id},
-                success: function(data){
-                    console.log(data);
-                    $('#id').html(data.id);
-                    $('#name').html(`<h6>${data.name}</h6>`);
-                    $('#email').html(`<h6>${data.email}</h6>`);
-                    $('#phone').html(`<h6>${data.phone}</h6>`);
-                    $('#address').html(`<h6>${data.address}</h6>`);
-                    $('#note').html(data.note);
-                    $('#total_price').html(`<h6>${data.total_price} VND</h6>`);
-                    $('#created_at').html(data.created_at);
-                    $('#type_payment').html(function() {
-                        if (data.type_payment === "stripe") {
-                            return `<td><div class="badge rounded-pill text-warning bg-light-warning p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>${data.type_payment}</div></td>`;
-                        } else if (data.type_payment === "vnpay") {
-                            return `<td><div class="badge rounded-pill text-primary bg-light-primary p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>${data.type_payment}</div></td>`;
-                        } else {
-                            return `<td><div class="badge rounded-pill text-info bg-light-info p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>${data.type_payment}</div></td>`;
-                        }
-                    });
-                    $('#status').html(function() {
-                        if (data.status == 0) {
-                            return `<td><div class="badge rounded-pill text-danger bg-light-danger p-2 text-uppercase px-3"><i class='bx bxs-watch me-1'></i>Chưa thành công</div></td>`;
-                        }if(data.status)  {
-                            return `<td><div class="badge rounded-pill text-success bg-light-success p-2 text-uppercase px-3"><i class='bx bx-check me-1'></i>Thành công</div></td>`;
-                        }
-                    });
-                    $('#is_done').html(function(){
-                        if(data.is_done ==0)
-                            return `<td><div class="badge rounded-pill text-danger bg-light-danger p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>Chưa xác nhận</div></td>`;
-                        else if(data.is_done == 1)
-                            return `<td><div class="badge rounded-pill text-warning bg-light-warning p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>Đã xác nhận</div></td>`;
-                        else if(data.is_done == 2)
-                            return `<td><div class="badge rounded-pill text-info bg-light-info p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>Đang giao</div></td>`;
-                        else if(data.is_done == 3)
-                            return `<td><div class="badge rounded-pill text-success bg-light-success p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>Hoàn thành</div></td>`;
-                        else if(data.is_done == 4)
-                            return `<td><div class="badge rounded-pill text-white   bg-secondary -info p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>Hoàn tiền</div></td>`;
-                        else if(data.is_done == -1 )
-                            return `<td><div class="badge rounded-pill text-dark  bg-light-dark  p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>Từ chối</div></td>`;
-
-                    });
-
-                    $('#list-products').html(function(){
-                             // get array products folow the format  $products = ['product_id' => 82, 'quantity' => 2],['product_id' => 83, 'quantity' => 2];
-                            var list_products = null;
-                            var stt =1;
-
-
-                            //chuyển data.products từ dạng json sang dạng array
-                            var products = JSON.parse(data.products);
-
-                            for (var i = 0; i < products.length; i++) {
-                                var name = null;
-                                var price = null;
-                                $.ajax({
-                                    url: '{{route('product.detail1')}}',
-                                    type: "GET",
-                                    data: {id: products[i].product_id},
-                                    async: false, // giúp chờ ajax chạy xong mới chạy tiếp đoạn code tiếp theo (đồng bộ)
-                                    success: function(data){
-                                        name = data.product_name;
-                                        price = data.price;
-                                        list_products += `<tr>
-                                                            <td>${stt++}</td>
-                                                            <td>${name}</td>
-                                                            <td>${price}</td>
-                                                            <td>${products[i].quantity}</td>
-                                                            <td>${products[i].quantity * price}</td>
-                                                        </tr>`;
-                                    }
-                                });
-                            }
-                            return list_products;
-                    });
-                },//end success
-                error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
-                }
-            });
-        });
-    });
-</script>
-<script>
-    $(document).ready(function(){
-        $.ajaxSetup({ headers: { 'X-CSRF-TOKEN' : '{{ csrf_token() }}' } });
-        $('#toWards').click(function(){
-            var id = $('#id').text();
-            if (!confirm('Bạn có chắc chắn muốn cập nhật tình trạng sản phẩm?')) {
-                return;
-            }
-            $.ajax({
-                type: 'post',
-                url: '{{route('order.update-next-is-done')}}',
-                data: {
-                    'id': id,
-                    '_token': '{{ csrf_token() }}'
-                },
-                success: function(data){
-                    location.reload();
-                },
-                error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
-                }
-            });
-        });
-        $('#turnAround').click(function(){
-            var id = parseInt($('#id').text());
-            if (!confirm('Bạn có chắc chắn muốn thực hiện quay ngược trạng thái sản phẩm?')) {
-                if(!confirm('Việc thực hiện hành động này rất nguy hiểm, bạn có chắc chắn muốn thực hiện?'))
-                    return;
-            }
-            $.ajax({
-                type: 'post',
-                url: '{{route('order.update-retreat-is-done')}}',
-                data: {
-                    'id': id,
-                    '_token': '{{ csrf_token() }}'
-                },
-                success: function(data){
-                    location.reload();
-                },
-                error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
-                }
-            });
-        });
-        $('#updateIsDone').click(function(){
-            var id =  parseInt($('#id').text());
-            var is_done = null;
-            if($('#status-navigation').text()== "Hoàn thành")
-                is_done = 3;
-            else if($('#status-navigation').text()== "Đang giao")
-                is_done = 2;
-            else if($('#status-navigation').text()== "Đã xác nhận")
-                is_done = 1;
-            else if($('#status-navigation').text()== "Chưa xác nhận")
-                is_done = 0;
-            else if($('#status-navigation').text()== "Hoàn tiền")
-                is_done = 4;
-            else if($('#status-navigation').text()== "Từ chối")
-                is_done = -1;
-
-            console.log(is_done + ' ' + id);
-
-            $.ajax({
-                type: 'post',
-                url: '{{route('order.updateOrder')}}',
-                data: {
-                    'id': id,
-                    'is_done': is_done,
-                    '_token': '{{ csrf_token() }}'
-                },
-                success: function(data){
-                    console.log(data);
-                    location.reload();
-                },
-                error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
-                }
-            });
-        });
-    });
-
-</script>
-<script>
-    $(document).ready(function(){
-        $('#toPDF').click(function(){
-            var id = $('#id').text();
-            window.location.href = '/orders/toPDF/' + id;
-        });
-    });
-</script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 <script>
     $(document).ready(function(){
@@ -668,7 +486,7 @@
                             html += `<td><div class="badge rounded-pill text-white bg-secondary p-2 text-uppercase px-3"><i class="bx bxs-circle me-1"></i>Hoàn tiền</div></td>`;
                         else if(item.is_done == -1)
                             html += `<td><div class="badge rounded-pill text-white bg-dark p-2 text-uppercase px-3"><i class="bx bxs-circle me-1"></i>Từ chối</div></td>`;
-                        html += `<td><div type="button" class="detail-btn btn btn-primary btn-sm radius-30 px-4" id=${ item.id } data-bs-toggle="modal" data-bs-target="#viewDetails">Xem chi tiết</div></td>`;
+                        html += `<td><button type="button" class="detail-btn btn btn-primary btn-sm radius-30 px-4" id=${ item.id }  onclick ="addDetailBtnEvent(${item.id})"data-bs-toggle="modal" data-bs-target="#viewDetails">Xem chi tiết</button></td>`;
                         html += `<td>`;
                         html += `<div class="d-flex order-actions">`;
                         html += `<a href=""toPDF/" . "${item.id}" " class=""><i class="bx bxs-file-export"></i></a>`;
@@ -696,6 +514,189 @@
     })
 </script>
 
+<script>
+
+    function addDetailBtnEvent(id) {
+            event.preventDefault();
+            alert('check data');
+            var id = id;
+            // alert(id);
+            // alert('check data');
+            // get data from database
+            $.ajax({
+                url: "{{route('order.detail')}}",
+                type: "GET",
+                data: {id: id},
+                success: function(data){
+                    console.log(data);
+                    $('#id').html(data.id);
+                    $('#name').html(`<h6>${data.name}</h6>`);
+                    $('#email').html(`<h6>${data.email}</h6>`);
+                    $('#phone').html(`<h6>${data.phone}</h6>`);
+                    $('#address').html(`<h6>${data.address}</h6>`);
+                    $('#note').html(data.note);
+                    $('#total_price').html(`<h6>${data.total_price} VND</h6>`);
+                    $('#created_at').html(data.created_at);
+                    $('#type_payment').html(function() {
+                        if (data.type_payment === "stripe") {
+                            return `<td><div class="badge rounded-pill text-warning bg-light-warning p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>${data.type_payment}</div></td>`;
+                        } else if (data.type_payment === "vnpay") {
+                            return `<td><div class="badge rounded-pill text-primary bg-light-primary p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>${data.type_payment}</div></td>`;
+                        } else {
+                            return `<td><div class="badge rounded-pill text-info bg-light-info p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>${data.type_payment}</div></td>`;
+                        }
+                    });
+                    $('#status').html(function() {
+                        if (data.status == 0) {
+                            return `<td><div class="badge rounded-pill text-danger bg-light-danger p-2 text-uppercase px-3"><i class='bx bxs-watch me-1'></i>Chưa thành công</div></td>`;
+                        }if(data.status)  {
+                            return `<td><div class="badge rounded-pill text-success bg-light-success p-2 text-uppercase px-3"><i class='bx bx-check me-1'></i>Thành công</div></td>`;
+                        }
+                    });
+                    $('#is_done').html(function(){
+                        if(data.is_done ==0)
+                            return `<td><div class="badge rounded-pill text-danger bg-light-danger p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>Chưa xác nhận</div></td>`;
+                        else if(data.is_done == 1)
+                            return `<td><div class="badge rounded-pill text-warning bg-light-warning p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>Đã xác nhận</div></td>`;
+                        else if(data.is_done == 2)
+                            return `<td><div class="badge rounded-pill text-info bg-light-info p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>Đang giao</div></td>`;
+                        else if(data.is_done == 3)
+                            return `<td><div class="badge rounded-pill text-success bg-light-success p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>Hoàn thành</div></td>`;
+                        else if(data.is_done == 4)
+                            return `<td><div class="badge rounded-pill text-white   bg-secondary -info p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>Hoàn tiền</div></td>`;
+                        else if(data.is_done == -1 )
+                            return `<td><div class="badge rounded-pill text-dark  bg-light-dark  p-2 text-uppercase px-3"><i class='bx bxs-circle me-1'></i>Từ chối</div></td>`;
+
+                    });
+
+                    $('#list-products').html(function(){
+                             // get array products folow the format  $products = ['product_id' => 82, 'quantity' => 2],['product_id' => 83, 'quantity' => 2];
+                            var list_products = null;
+                            var stt =1;
+                            //chuyển data.products từ dạng json sang dạng array
+                            var products = JSON.parse(data.products);
+
+                            for (var i = 0; i < products.length; i++) {
+                                var name = null;
+                                var price = null;
+                                $.ajax({
+                                    url: '{{route('product.detail1')}}',
+                                    type: "GET",
+                                    data: {id: products[i].product_id},
+                                    async: false, // giúp chờ ajax chạy xong mới chạy tiếp đoạn code tiếp theo (đồng bộ)
+                                    success: function(data){
+                                        name = data.product_name;
+                                        price = data.price;
+                                        list_products += `<tr>
+                                                            <td>${stt++}</td>
+                                                            <td>${name}</td>
+                                                            <td>${price}</td>
+                                                            <td>${products[i].quantity}</td>
+                                                            <td>${products[i].quantity * price}</td>
+                                                        </tr>`;
+                                    }
+                                });
+                            }
+                            return list_products;
+                    });
+                },//end success
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseText);
+                }
+            });
+    }
+</script>
+
+<script>
+    $(document).ready(function(){
+        $.ajaxSetup({ headers: { 'X-CSRF-TOKEN' : '{{ csrf_token() }}' } });
+        $('#toWards').click(function(){
+            var id = $('#id').text();
+            if (!confirm('Bạn có chắc chắn muốn cập nhật tình trạng sản phẩm?')) {
+                return;
+            }
+            $.ajax({
+                type: 'post',
+                url: '{{route('order.update-next-is-done')}}',
+                data: {
+                    'id': id,
+                    '_token': '{{ csrf_token() }}'
+                },
+                success: function(data){
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseText);
+                }
+            });
+        });
+        $('#turnAround').click(function(){
+            var id = parseInt($('#id').text());
+            if (!confirm('Bạn có chắc chắn muốn thực hiện quay ngược trạng thái sản phẩm?')) {
+                if(!confirm('Việc thực hiện hành động này rất nguy hiểm, bạn có chắc chắn muốn thực hiện?'))
+                    return;
+            }
+            $.ajax({
+                type: 'post',
+                url: '{{route('order.update-retreat-is-done')}}',
+                data: {
+                    'id': id,
+                    '_token': '{{ csrf_token() }}'
+                },
+                success: function(data){
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseText);
+                }
+            });
+        });
+        $('#updateIsDone').click(function(){
+            var id =  parseInt($('#id').text());
+            var is_done = null;
+            if($('#status-navigation').text()== "Hoàn thành")
+                is_done = 3;
+            else if($('#status-navigation').text()== "Đang giao")
+                is_done = 2;
+            else if($('#status-navigation').text()== "Đã xác nhận")
+                is_done = 1;
+            else if($('#status-navigation').text()== "Chưa xác nhận")
+                is_done = 0;
+            else if($('#status-navigation').text()== "Hoàn tiền")
+                is_done = 4;
+            else if($('#status-navigation').text()== "Từ chối")
+                is_done = -1;
+
+            console.log(is_done + ' ' + id);
+
+            $.ajax({
+                type: 'post',
+                url: '{{route('order.updateOrder')}}',
+                data: {
+                    'id': id,
+                    'is_done': is_done,
+                    '_token': '{{ csrf_token() }}'
+                },
+                success: function(data){
+                    console.log(data);
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseText);
+                }
+            });
+        });
+    });
+
+</script>
+<script>
+    $(document).ready(function(){
+        $('#toPDF').click(function(){
+            var id = $('#id').text();
+            window.location.href = '/orders/toPDF/' + id;
+        });
+    });
+</script>
 @endsection
 
 

@@ -89,7 +89,14 @@ class PromotionsController extends Controller
         $output ="";
         $stt = 1;
         if($request->ajax() && $request->search != ""){
-            $data=Promotions::where('promotion_name','like','%'.$request->search.'%')->get();
+            $data=Promotions::where('promotion_name','like','%'.$request->search.'%')->orwhere('description','like','%'.$request->search.'%')->get();
+            // if seacrh by discount have % in search
+            if(strpos($request->search, '%') == true){
+                $data = Promotions::where('discount', 'like', '%' . substr($request->search, 0, -1) . '%')
+                    ->get();
+            }
+
+
             if(count($data)>0){
                     foreach ($data as $item ){
                     $output .='
@@ -118,7 +125,7 @@ class PromotionsController extends Controller
                                 <td>
                                     <div class="d-flex order-actions">'
                                         .'<div class="ms-auto " data-bs-toggle="modal" data-bs-target="#editPromotionModal"  >'.'
-                                        <a class="edit-promotion-btn" id = '.$item -> id.' class=""><i '; $output .='  class=" bx bxs-edit " '.'></i></a>'.'
+                                        <a class="edit-promotion-btn" id = '.$item -> id.' onclick="editPromotion('.$item->id.')" class=""><i '; $output .='  class=" bx bxs-edit " '.'></i></a>'.'
                                     </div>'
 
                                         .' <a href= "/promotions/delete/'.$item->id.'" class="ms-3" onclick="'; $output .=' return confirm("Bạn có chắc chắn muốn xoá?")';$output .='"><i class="bx bxs-trash"></i></a>

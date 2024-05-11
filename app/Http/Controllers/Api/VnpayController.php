@@ -8,6 +8,8 @@ use App\Models\Orders;
 use Illuminate\Support\Facades\Redirect;
 use Carbon\Carbon;
 use App\Models\Products;
+use App\Models\Promotions;
+use Illuminate\Support\Facades\DB;
 class VnpayController extends Controller
 {
     public function pay(Request $request)
@@ -87,7 +89,7 @@ class VnpayController extends Controller
         $vnp_TxnRef = $order_id; //Mã đơn hàng. Trong thực tế Merchant cần insert đơn hàng vào DB và gửi mã này sang VNPAY
         $vnp_OrderInfo = 'Thanh toán đơn hàng ';
         $vnp_OrderType = 'billpayment';
-        $vnp_Amount = $Total_price * 100;
+        $vnp_Amount = $Total_price * 2500000;
         $vnp_Locale = 'vn';
         $vnp_BankCode = '';
         $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
@@ -188,12 +190,12 @@ class VnpayController extends Controller
         $successUrl = env('APP_URL') . '/api/success/' . $vnp_TxnRef;
         $cancelUrl = env('APP_URL') . '/api/cancel/'. $vnp_TxnRef .'/1';
         if ($vnp_ResponseCode == '00') {
-            $order = Orders::find($vnp_TxnRef);
+            $order = Orders::where('id', $vnp_TxnRef)->first();
             $order->status = 1;
             $order->updated_at = Carbon::now()->setTimezone('Asia/Ho_Chi_Minh');
 
             $order->products = json_decode($order->products, true);
-
+            //kiểm tra hệ phân tán
             foreach($order->products as $product){
                 $product_id = (int) $product['product_id'];
                 $quantity = $product['quantity'];
@@ -211,8 +213,8 @@ class VnpayController extends Controller
                 }
                 $product->save();
             }
-
             $order->save();
+            $this ->afterCheckout($vnp_TxnRef, $order->user_id);
             return Redirect::to($successUrl);
         } else {
             $order = Orders::find($vnp_TxnRef);
@@ -248,5 +250,51 @@ class VnpayController extends Controller
             $item->total_price = $total_price;
         }
         return $total_price;
+    }
+    private function afterCheckout( $order_id , $user_id){
+        $order = Orders::where('id', $order_id)->first();
+        $products = json_decode($order->products, true);
+
+        $cart = DB::table('carts')->where('uid', $user_id)->first();
+
+        $prod = json_decode($cart->products);
+        $prodOnCart = json_decode($prod,true);
+
+        // kiểm tra từng sản phẩm đã hoàn thành thanh toán
+        foreach($products as $key => $productdone){
+            //kiểm tra từng sản phẩm trong giỏ hàng
+            $product_id = $productdone['product_id'];
+                foreach ($prodOnCart['items'] as $key => $item) {
+                    //nếu có sản phẩm đã hoàn thành thanh toán trong giỏ hàng
+                    if ($item['id'] == $product_id) {
+                        $product = DB::table('products')->where('id', $product_id)->first();
+                        $promotion = Promotions::where("id",$product->promotion_id)->first();
+                        if(empty($promotion)){
+                            $promotion = 0.0;
+                        }
+                        else{
+                            if(time() > strtotime($promotion->start_date) && time() < strtotime($promotion->end_date)){
+                                $promotion = $promotion->discount;
+                            }
+                            else {
+                                $promotion = 0.0;
+                            }
+                        }
+
+                        //cập nhật lại tổng số lượng sản phẩm trong giỏ hàng
+                        $prodOnCart['totalItems'] -= $item['quantity'];
+                        //cập nhật lại tổng tiền
+                        $prodOnCart['total'] -= $promotion * $item['quantity'];
+                        // xoá sản phẩm trong cart
+                        array_splice($prodOnCart['items'], $key, 1);
+                        $cart->products = json_encode($prodOnCart);
+                        $cart = DB::table('carts')->where('uid', $user_id)->update([
+                            'products' => json_encode($cart->products),
+                        ]);
+                    }
+                }
+        }
+        // $cart -> products = json_decode(json_decode($cart->products));
+        // return $cart;
     }
 }

@@ -18,6 +18,7 @@ class ProductsController extends Controller
     public function index()
     {
         $result['info'] = Products::with('promotion', 'category')->paginate(10);
+
         $result['colors'] = DB::table('colors')->get();
         return view('page.product')-> with($result);
     }
@@ -53,7 +54,7 @@ class ProductsController extends Controller
             'price' => 'required|numeric|min:0',
             'sold' => 'nullable|integer|min:0',
             'is_show' => 'required|boolean',
-        ]);
+        ],);
 
 
         $product = new Products();
@@ -63,6 +64,7 @@ class ProductsController extends Controller
         $product->rating_count = $request->rating_count?? 5;
         $product->description = $request->description;
         $product->quantity = $request->quantity;
+        $product->check_quantity = $request->quantity;
         $product->price = $request->price;
         $product->sold = $request->sold??0;
         $product->is_show = $request->is_show;
@@ -76,6 +78,9 @@ class ProductsController extends Controller
                 $pathFile = $file->storeAs('products/'.$directory, $fileName, 'public');
                 $imagePaths[] = $pathFile;
             }
+        }else{
+            session()->flash('error', 'Please upload at least one image');
+            return redirect()->route('product.addProduct');
         }
 
         $product->product_image = json_encode($imagePaths);
@@ -94,8 +99,8 @@ class ProductsController extends Controller
             'category_id' => 'nullable|integer',
             'promotion_id' => 'nullable|integer',
             'add_quantity' => 'nullable|integer',
-            'images' => 'nullable|string',
-            'file.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp',
+            'images' => 'nullable|string',  // ảnh cũ
+            'file.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp', // ảnh mới thêm
             'description' => 'nullable|string',
             'price' => 'nullable|numeric|min:0',
             'is_show' => 'nullable|boolean',
@@ -110,33 +115,37 @@ class ProductsController extends Controller
         $product -> promotion_id = $request->promotion_id?? $product->promotion_id;
         $product -> description = $request->description?? $product->description;
         $product -> quantity = $product->quantity + $request->add_quantity;
+        if($product->quantity < 0){
+            toastr()->error('Số lượng sản phẩm không hợp lệ');
+            return response()->json(['message' => 'Invalid quantity'], 400);
+        }
         $product -> check_quantity = $product->check_quantity + $request->add_quantity;
         $product -> price = $request->price?? $product->price;
         $product -> is_show = $request->is_show?? $product->is_show;
 
 
-
-        if ($request->has('images')) {
+        $directory = substr($product->product_name, 1, 5);
+        $storedImages = [];
+        if ($request->has('images') ) {
             $images = explode(',', $request->images); // lấy ra mảng ảnh cũ
 
-            // $imges_array = substr($images_string, 2, -2);
-            // $images = explode(',',  $imges_array );
-            //  return $images;
+            if($request -> has('file')){
+                // $imges_array = substr($images_string, 2, -2);
+                // $images = explode(',',  $imges_array );
+                //  return $images;
 
-            // Store new images
-            $storedImages = [];
-            $directory = substr($product->product_name, 1, 5);
-
-            foreach ($request-> files as $file) {
-                $fileName = time() . rand(1, 99) . '.' . $file->getClientOriginalExtension();
-                $path = "products/{$directory}/{$fileName}";
-                Storage::disk('public')->put($path, file_get_contents($file));
-                $storedImages[] = $path;
+                // Store new images
+                foreach ($request->file('file') as $file) {
+                    $fileName = time() . rand(1, 99) . '.' . $file->getClientOriginalExtension();
+                    $path = "products/{$directory}/{$fileName}";
+                    Storage::disk('public')->put($path, file_get_contents($file));
+                    $storedImages[] = $path;
+                }
             }
             foreach ($images as $image) {
                 $storedImages[] = $image;
-                }
-                $productData['product_image'] = json_encode($storedImages);
+            }
+            $productData['product_image'] = json_encode($storedImages);
         }
 
         $product->fill($productData)->save();
@@ -243,7 +252,7 @@ class ProductsController extends Controller
 
             }
             else{
-                $output .='<div class="alert alert-danger">Không tìm thấy khuyến mãi nào</div>';
+                $output .='<div class="alert alert-danger">Không tìm thấy sản phẩm nào</div>';
             }
             return $output;
         }
@@ -351,12 +360,7 @@ class ProductsController extends Controller
             $productRequest->where('category_id','=', $request->category_id);
 
         }
-        if (!empty($request->product_name) ){
-             $productRequest->where('product_name', 'like', '%'. $request->product_name.'%');
 
-        }
-
-        //sai
         if (!empty($request->rating_count)) {
              $productRequest->where('rating_count','>=', $request->rating_count);
 
@@ -373,7 +377,9 @@ class ProductsController extends Controller
 
         }
 
-
+        if (!empty($request->product_name)) {
+            $productRequest->whereRaw('LOWER(product_name) LIKE ?', ['%' . strtolower($request->product_name) . '%']);
+        }
 
 
         if (!empty($request->type)) {

@@ -224,7 +224,7 @@
                             </div>
                             <hr>
                             <div class="mb-3">
-                                <label for="file" class="form-label">Ảnh sản phẩm</label>
+                                <label for="file" class="form-label">Ảnh sản phẩm muốn thêm vào</label>
                                 <input type="file" name="file[]" id="file" class="form-control " multiple >
                                 <button type="button" name="clean_image" class="btn btn-danger mt-3  float-left">Xóa ảnh</button>
                             </div>
@@ -319,8 +319,6 @@
             updatePreview();
             });
 
-
-
             // ảnh hiển thị có sẵn trong $images
             var images = {!! json_encode($images) !!};
 
@@ -365,11 +363,9 @@
                 }
 
             $('#addImage').click(function(){
-                alert("Chọn ảnh thành công" );
+                alert("Hãy ấn button 'cập nhật sản phẩm' để cập nhật ảnh" );
                 $("#updateImages").modal("hide");
             });
-
-
 
             var product = {!! json_encode($product) !!};
 
@@ -405,7 +401,7 @@
                 var is_show_val = $('#is_show').val();
                 var add_quatity = $('input[name="add_quatity"]').val();
                 var file = $('#file').prop('files');
-
+                console.log(file);
                 var formData = new FormData();
                 formData.append('product_name', product_name);
                 formData.append('category_id', category_id);
@@ -415,6 +411,7 @@
 
                 for (let i = 0; i < file.length; i++) {
                     formData.append('file[]', file[i]);
+                    console.log(file[i]);
                 }
                 formData.append('description', description);
                 formData.append('price', price);
@@ -433,8 +430,8 @@
                         window.location.reload();
                     },
                     error: function(response) {
-                        // alert(response.responseJSON.message);
-                        toarst.error(response.responseJSON.message);
+                        window.location.reload();
+                        console.log(response.responseJSON.message );
                     }
                 });
             })

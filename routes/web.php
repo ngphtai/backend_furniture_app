@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\CommentsController;
 use App\Http\Controllers\Api\ColorsController;
 use App\Http\Controllers\Api\OrdersController;
 use App\Http\Controllers\PdfController;
+use App\Http\Controllers\Api\RefundRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,7 +50,7 @@ Route::group(['middleware'=> 'checkAdminLogin' ],function () {
         Route::get('/index', [CategoriesController::class, 'index'])->name('category.index');
         Route::get('/search', [CategoriesController::class, 'search'])->name('category.search');;
         Route::get('/edit', [CategoriesController::class, 'edit'])->name('category.edit');
-        Route::post('/store', [CategoriesController::class, 'store'])->name('category.store');
+        Route::post('/store', [CategoriesController::class, 'create'])->name('category.store');
         Route::post('/update/{id}', [CategoriesController::class, 'update'])->name('category.update');
         Route::get('/delete/{id}', [CategoriesController::class, 'destroy']);
     });
@@ -71,7 +72,7 @@ Route::group(['middleware'=> 'checkAdminLogin' ],function () {
         Route::get('/addproduct', [ProductsController::class, 'addProduct'])->name('product.addProduct');
         Route::get('/search', [ProductsController::class, 'search_admin'])->name('product.search_admin');
         Route::post('/create', [ProductsController::class, 'store'])->name('product.store');
-        Route::post('/update/{id}', [ProductsController::class, 'update'])->name('product.update');
+        Route::any('/update/{id}', [ProductsController::class, 'update'])->name('product.update');
         Route::get('/delete/{id}', [ProductsController::class, 'destroy'])->name('product.delete');
     });
 
@@ -105,6 +106,9 @@ Route::group(['middleware'=> 'checkAdminLogin' ],function () {
         Route::any('/updatenextdone', [OrdersController::class, 'updatedone'])->name('order.update-next-is-done');
         Route::any('/updateretreatdone', [OrdersController::class, 'updateretreatdone'])->name('order.update-retreat-is-done');
         Route::any('/updateOrder', [OrdersController::class, 'updateIsDone'])->name('order.updateOrder');
+        Route::any('/approveRefund', [RefundRequestController::class, 'update'])->name('order.approveRefund');
+        Route::any('/approve', [RefundRequestController::class, 'index'])->name('order.approve');
+        Route::get('/request/search', [RefundRequestController::class, 'search'])->name('request.searchRequest');
 
         Route::get('/toPDF/{id}', [OrdersController::class, 'toPDF'])->name('order.toPDF');
     });

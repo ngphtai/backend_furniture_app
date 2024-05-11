@@ -36,7 +36,7 @@
                                     <h6 class="mb-0" for = "email">Email</h6>
                                 </div>
                                 <div class="col-sm-9 text-secondary">
-                                    <input type="text" class="form-control" value="{{$user ->email}}" name ="email" id = "email" />
+                                    <label type="text" class="form-control" value="{{$user ->email}}" name ="email" id = "email" > {{$user ->email}}</label>
                                 </div>
                             </div>
                             <div class="row mb-3">

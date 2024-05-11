@@ -57,6 +57,7 @@
                                         // $info = App\Models\Products::with('category')->get();
 
                                         // lấy ra tất cả sản phẩm và danh mục của sản phẩm ( trong model Products có 1 hàm category dùng để lấy ra danh mục của sản phẩm)
+
                                         ?>
                                         @foreach ($info as $item )
                                         <tr>
@@ -114,7 +115,11 @@
                                                     <li><p class="text-muted mb-1 text-truncate"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i>Tồn kho:<b style ="font size:13 px"> {{$item -> quantity}}</b> </p></li>
                                                     <li><p class="text-muted mb-1 text-truncate"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i>Đã bán:<b style ="font size:13 px"> {{$item -> sold}}</b> </p></li>
                                                     <li><p class="text-muted mb-0 text-truncate"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i>Giá tiền: <b style ="font size:15 px">{{$item -> price}}</b></p></li>
-                                                    <li><p class="text-muted mb-1 text-truncate"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i>Khuyến mãi: <b style ="font size:13 px">{{optional($item->promotion)->discount?? 0}}%  </b> </p></li>
+                                                    @if(optional($item->promotion)->end_date < now())
+                                                        <li><p class="text-muted mb-1 text-truncate"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i>Khuyến mãi: <b style ="font size:13 px">0%  </b> </p></li>
+                                                    @else
+                                                        <li><p class="text-muted mb-1 text-truncate"><i class="mdi mdi-circle-medium align-middle text-primary me-1"></i>Khuyến mãi: <b style ="font size:13 px">{{optional($item->promotion)->discount?? 0}}%  </b> </p></li>
+                                                    @endif
                                                 </ul>
                                             </td>
 

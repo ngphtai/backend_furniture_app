@@ -21,7 +21,7 @@
         <div class="card-body">
             <div class="d-lg-flex align-items-center mb-4 gap-3">
                 <div class="position-relative">
-                    <input type="text" name="search" id="search" class="form-control ps-5 radius-30" placeholder="Tìm kiếm bình luận" style="width: 600px;" onfocus="this.value=''">
+                    <input type="text" name="search" id="search" class="form-control ps-5 radius-30" placeholder="Tìm kiếm theo nội dung bình luận" style="width: 600px;" onfocus="this.value=''">
                     <span class="position-absolute top-50 product-show translate-middle-y" ><i class="bx bx-search"></i></span>
                 </div>
                 {{-- button add ( cái hiển thị của nó là Add New category--}}
@@ -280,7 +280,7 @@
 
         $('#add_keyword_form').on('submit', function(e){
             e.preventDefault();
-            alert('submit');
+            // alert('submit');
             var form = $(this);
             var url = form.attr('action');
             var type = form.attr('method');

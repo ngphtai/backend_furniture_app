@@ -136,7 +136,7 @@
 						<h5 class="mb-0">Tổng hóa đơn</h5>
 
 					</div>
-				<div class="ms-auto">	<h5 class="mb-0">{{$order -> total_price}} vnđ</h5>
+				<div class="ms-auto">	<h5 class="mb-0">{{$order -> total_price}} $</h5>
 					</div>
 				</div>
 			</div>

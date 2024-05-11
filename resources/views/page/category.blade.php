@@ -200,26 +200,31 @@
     {{-- add  --}}
     <script>
         $(document).ready(function(){
-            $('#addCategory').on('click','#addCategoryBtn',function(event){
-                event.preventDefault();
-                alert('ok');
-                categoryData = $('#add_category_form').serialize();
+            $('#addCategoryBtn').click(function(event){
+                event.preventDefault(); // tránh sự kiện mặc định của form
+                // get image from name image
+                const categoryData = new FormData($('#add_category_form')[0]);
+                categoryData.append('_token', '{{ csrf_token() }}');
+                console.log(categoryData);
                 $.ajax({
                     url: '{{ route('category.store') }}',
                     method: 'POST',
                     data: categoryData,
+                    contentType: false,
+                    processData: false,
                     success: function(response){
                         if(response.status == 200){
-                            $('#addCategoryModal').modal('hide');
+                            $('#addCategory').modal('hide');
                             location.reload();
                         }
                     },
-                    error: function(error){
-                        console.error('Error adding category:', error);
+                    error: function(response) {
+                        console.log(response.responseJSON.message );
                     }
                 });
             });
         });
+
     </script>
 
     {{-- edit  --}}
@@ -279,24 +284,3 @@
 
 @endsection
 
-   {{--                _oo0oo_
-                      o8888888o
-                      88" . "88
-                      (| -_- |)
-                      0\  =  /0
-                    ___/`---'\___
-                  .' \\|     |// '.
-                 / \\|||  :  |||// \
-                / _||||| -:- |||||- \
-               |   | \\\  -  /// |   |
-               | \_|  ''\---/''  |_/ |
-               \  .-\__  '-'  ___/-. /
-             ___'. .'  /--.--\  `. .'___
-          ."" '<  `.___\_<|>_/___.' >' "".
-         | | :  `- \`.;`\ _ /`;.`/ - ` : | |
-         \  \ `_.   \_ __\ /__ _/   .-` /  /
-     =====`-.____`.___ \_____/___.-`___.-'=====
-                       `=---='
-
-
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --}}

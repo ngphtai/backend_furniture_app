@@ -24,7 +24,6 @@ class CartController extends Controller
             $cart = new Cart();
             $cart->uid = $request->uid;
             $cart->products = json_encode(["items" => [], "totalItems" => 0, "total" => 0.0]);
-
         }
         if($cart->products == null){
             $cart->products = json_encode(["items" => [], "totalItems" => 0, "total" => 0.0]);
@@ -129,6 +128,13 @@ class CartController extends Controller
                     $promotion = 0.0;
                 }
             }
+            // nếu hết sản phẩm
+            if($product->quantity == 0){
+                //set số lượng sản phẩm về 0
+                $prod->items[$key]->quantity = 0;
+                $prod->totalItems -= $item->quantity;
+                $prod->total -= $item->dicountPrice * $item->quantity;
+            }
             $tempPrice = $item->price;
             $item->dicountPrice = $tempPrice - $tempPrice * $promotion / 100;
             $prod->total += $item->dicountPrice *$item->quantity ;
@@ -197,8 +203,12 @@ class CartController extends Controller
             $prod = json_decode($cart->products);
             foreach ($prod->items as $key => $item) {
                 if ($item->id == $request->product_id) {
-                    // return response()->json($product_image);
                     $product = DB::table('products')->where('id', $request->product_id)->first();
+                    if($product -> quantity < $request->quantity){
+                        return response()->json([
+                            'message' => 'false',
+                        ], 200);
+                    }
                     $promotion = Promotions::where("id",$product->promotion_id)->first();
                     if(empty($promotion)){
                         $promotion = 0;

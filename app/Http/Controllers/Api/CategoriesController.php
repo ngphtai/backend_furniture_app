@@ -24,32 +24,27 @@ class CategoriesController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-            $user = auth()->guard('ANNTStore')->user();
-            if($user->user_type != 'Admin'){
-                toastr()->error("Tài khoản không có quyền thực hiện chức năng này!");
-                return response()->json(['status' => 200]);
-            }
-            $request->validate([
-                'name' => 'required',
-                'image' => 'required|image',
-            ]);
+    public function create(Request $request){
+        Request()->validate([
+            'name' => 'required | string',
+            'image' => 'required | image',
+        ]);
+        $user = auth()->guard('ANNTStore')->user();
+        if($user->user_type != 'Admin'){
+            toastr()->error("Tài khoản không có quyền thực hiện chức năng này!");
+            return response()->json(['status' => 200]);
+        }
+        $category = new Categories();
+        $category->name = $request->name;
+        $image = $request->file('image');
+        $fileName = time() . '.' . $image->getClientOriginalExtension();
+        $pathFile = $image->storeAs('categories', $fileName, 'public');
+        $category->image = $pathFile;
+        $category->save();
+        toastr()->success('Category created successfully');
+        return response()->json(['data' => $category, 'status' => 200]);
 
-            $categories = new categories();
-            $categories->name = $request->name;
-
-            $image = $request->file('image');
-            $fileName = time() . '.' . $image->getClientOriginalExtension();
-            $pathFile = $image->storeAs('categories', $fileName, 'public');
-            $categories->image = $pathFile;
-
-            $categories->save();
-
-            session()->flash('success', 'Category created successfully');
-            return redirect()->route('category.index');
     }
-
     /**
      * Show the form for editing the specified resource.
      */
@@ -99,7 +94,7 @@ class CategoriesController extends Controller
 
             $category->save();
 
-            session()->flash('success', 'Category updated successfully');
+             toastr()->success('Category updated successfully');
             return response()->json(['status' => 200]);
     }
 
@@ -121,7 +116,7 @@ class CategoriesController extends Controller
             $oldImagePath = public_path('storage/' . $category->image);
             unlink($oldImagePath); // Xóa ảnh cũ từ thư mục uploads
 
-            session()->flash('success', 'Category deleted successfully');
+            toastr()->success('Category deleted successfully');
             return redirect()->route('category.index');
     }
 
@@ -131,6 +126,7 @@ class CategoriesController extends Controller
         $stt = 1;
         if($request->ajax() && $request->search != ""){
             $data=Categories::where('name','like','%'.$request->search.'%')->get();
+
             if(count($data)>0){
                 // $output ='
                 // <div class="alert alert-success">'.count($data).' kết quả được tìm thấy</div>
@@ -163,32 +159,12 @@ class CategoriesController extends Controller
 
             }
             else{
-                $output .='<div class="alert alert-danger">Không tìm thấy khuyến mãi nào</div>';
+                $output .='<div class="alert alert-danger">Không tìm thấy danh mục nào</div>';
             }
             return $output;
         }
 
     }
-    // tham khảo
-    // public function upload_photo(Request $request){
-
-    //     $file = $request->file('file');
-
-    //     try {
-    //     $extension = $file->getClientOriginalExtension();
-
-    //     $fullFileName = uniqid(). '.'. $extension;
-    //     $timedir = date("Ymd");
-    //     $file->storeAs($timedir, $fullFileName,  ['disk' => 'public']);
-
-    //     $url = env('APP_URL').'/uploads/'.$timedir.'/'.$fullFileName;
-    //     return ["code" => 0, "data" => $url, "msg" => "success"];
-    //     } catch (Exception $e) {
-    //         return ["code" => -1, "data" => "", "msg" => "error"];
-    //     }
-    // }
-
-
 
     //API
     public function show_all()

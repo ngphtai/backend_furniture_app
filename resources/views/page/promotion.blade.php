@@ -81,7 +81,7 @@
                                 <td>
                                     <div class="d-flex order-actions">
                                         <div class="ms-auto " data-bs-toggle="modal" data-bs-target="#editPromotionModal"  >
-                                            <a class="edit-promotion-btn" id = {{$item -> id}}  class=""><i class='bx bxs-edit'></i></a>
+                                            <a class="edit-promotion-btn" id ={{$item -> id}} onclick="editPromotion({{$item->id}})"  class=""><i class='bx bxs-edit'></i></a>
                                         </div>
                                         <a href="{{url('promotions/delete',$item->id)}}" class="ms-3" onclick="return confirm('Bạn có chắc chắn muốn xoá?')"><i class='bx bxs-trash'></i></a>
 
@@ -121,7 +121,7 @@
                                             </div>
                                             <div class="mb-3">
                                                 <label for="discount" class="form-label">Giảm giá</label>
-                                                <input name="discount" type="tel" class="form-control" placeholder="Chọn giá giảm % *">
+                                                <input name="discount" type="tel" class="form-control" placeholder="Chọn % giá giảm ( từ 1% - 100% ,không bao gồm %)  *">
 
                                             </div>
                                             <div class="mb-3">
@@ -255,17 +255,13 @@
 
     {{-- edit  --}}
     <script>
-        $(document).ready(function() {
-
-        // Edit button click event handler to each promotion
-        $('.edit-promotion-btn').click(function(event) {
-            event.preventDefault();
-            const promotionId = $(this).attr('id') ;
+        function editPromotion(id){
+            // const promotionId = $(this).attr('id') ;
             $.ajax({
                 url: '{{ route('promotion.edit') }}',
             method: 'get',
             data: {
-                id: promotionId,
+                id: id,
             },
             success: function(promotionData) {
                 $("#promotion_name").val(promotionData.promotion_name);
@@ -282,7 +278,37 @@
             }
             });
 
-        });
+        }
+        $(document).ready(function() {
+
+        // Edit button click event handler to each promotion
+        // $('.edit-promotion-btn').click(function(event) {
+        //     event.preventDefault();
+        //     const promotionId = $(this).attr('id') ;
+        //     $.ajax({
+        //         url: '{{ route('promotion.edit') }}',
+        //     method: 'get',
+        //     data: {
+        //         id: promotionId,
+        //     },
+        //     success: function(promotionData) {
+        //         $("#promotion_name").val(promotionData.promotion_name);
+        //         $("#description").val(promotionData.description);
+        //         $("#discount").val(promotionData.discount);
+        //         $("#start_date").val(promotionData.start_date);
+        //         $("#end_date").val(promotionData.end_date);
+        //         $("#is_show").val(promotionData.is_show);
+        //         $("#id").val(promotionData.id);
+
+        //     },
+        //     error: function(error) {
+        //         console.error('Error fetching promotion data:', error);
+        //     }
+        //     });
+
+        // });
+
+
         //handle update promotion
         $(document).ready(function() {
             $('#editPromotionBtn').click(function(event) {

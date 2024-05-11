@@ -62,7 +62,7 @@
                             <div class="d-flex align-items-center">
                                 <div>
                                     <p class="mb-0 text-secondary font-14">Tổng lợi nhuận</p>
-                                    <h5 class="my-0">{{$revenue}} vnd</h5>
+                                    <h5 class="my-0">{{$revenue}} $</h5>
                                 </div>
                                 <div class="text-danger ms-auto font-30"><i class='bx bx-dollar' ></i>
                                 </div>

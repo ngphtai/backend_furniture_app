@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Orders;
+use App\Models\Products;
 use App\Models\InforUsers;
+use App\Models\Refund_requests;
 use Stripe\Climate\Order;
 
 
@@ -41,10 +43,11 @@ class OrdersController extends Controller
 
     public function index_4()
     {
+
         $info = Orders::with('user')-> get();
         $info = Orders::where('is_done', 4)->orderBy('created_at', 'desc')-> paginate(15);
-
-        return view('page.orders', compact('info'));
+        $refund1 = DB::table('refundrequests')->orderBy('created_at','desc')->paginate(15);
+        return view('page.orders', compact('info', 'refund1'));
     }
 
     public function index_5()
@@ -145,7 +148,14 @@ class OrdersController extends Controller
             } else {
                 $order->is_done = $request->is_done;
 
-
+                if ($order->is_done == -1) {
+                    foreach(json_decode($order->products) as $item){
+                        $product = Products::where('id', $item->product_id)->first();
+                        $product->quantity += $item->quantity;
+                        $product->check_quantity += $item->quantity;
+                        $product->save();
+                    }
+                }
                 $order->save();
                 toastr()->success('Cập nhật thành công tình trạng sản phẩm');
                 return response()->json(['message' => 'Update success'], 200);
@@ -164,7 +174,7 @@ class OrdersController extends Controller
 
     public function toPDF(String $id){
         $orders = Orders::where('id', $id)->first();
-        $orders-> email = DB::table('users')->where('id', $orders->user_id)->first()->email;
+        $orders-> email = DB::table('users')->where('uid', $orders->user_id)->first()->email;
 
         return view('page.pdf', compact('orders'));
     }
@@ -182,7 +192,7 @@ class OrdersController extends Controller
         $ordersrequest =  Orders::query();
 
         if( $request->email!= ''){
-             $ordersrequest->where('name', 'like', '%'.$request->email.'%');
+             $ordersrequest->whereRaw('LOWER(name) LIKE ?', ['%'.strtolower($request->email).'%']);
         }
 
         if( $request->type_payment!= ''|| $request->type_payment == "Phương thức"){
@@ -235,8 +245,9 @@ class OrdersController extends Controller
                 $product->product_image = json_decode($product->product_image);
 
                 $item->image = $product->product_image[0];
-                $item->product_id = $product->product_name;
+                $item->name = $product->product_name;
                 $order->products = $products;
+                $item ->product_id = (int)$product->id;
             }
         }
 
@@ -247,6 +258,8 @@ class OrdersController extends Controller
 
         return response()->json(['data' => $orders], 200);
     }
+
+
 
     public function success(String $id){
         $order = Orders::where('id', $id)->first();
@@ -273,4 +286,30 @@ class OrdersController extends Controller
 
         return view('page.order.order_failed');
     }
+    public function cancelv2(String $id,String $error){
+        $order = Orders::where('id', $id)->first();
+        if($order!= null){
+            foreach(json_decode($order->products) as $item){
+                $product = Products::where('id', $item->product_id)->first();
+                $product->quantity += $item->quantity;
+                $product->save();
+            }
+
+            $order->delete();
+        }
+
+        if($error == '1')
+            return view('page.order.order_failed', ['error' => 'Thanh toán thất bại']);
+        else if($error == '2')
+            return view('page.order.order_failed', ['error' => 'Sản phẩm đã hết hàng']);
+        else if($error == '3')
+            return view('page.order.order_failed', ['error' => 'Đã Huỷ thanh toán']);
+        else
+            return view('page.order.order_failed', ['error' => 'Có lỗi xảy ra trong quá trình thanh toán']);
+
+        return view('page.order.order_failed');
+    }
+
+
+
 }

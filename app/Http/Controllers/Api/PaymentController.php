@@ -12,6 +12,7 @@ use Stripe\Exception\UnexpectedValueException;
 use Stripe\Exception\SignatureVerificationException;
 use App\Models\Products;
 use App\Models\Orders;
+use App\Models\Promotions;
 use Illuminate\Support\Carbon;
 use Stripe\Checkout\Session;
 use function Laravel\Prompts\text;
@@ -62,20 +63,28 @@ class PaymentController extends Controller
           }
 
 
-        $orders = new Orders();
-        $orders->user_id = $request->uid;
-        $orders->total_price = $request->total_price;
-        $orders->products = $request->products;
-        $orders->address = $request->address;
-        $orders->phone = $request->phone;
-        $orders->name = $request->name;
-        $orders->type_payment = 'direct';
-        $orders->status = 0;
-        $orders->note = $request->note?? '';
-        $orders->is_done = 0;
+          $map = [] ;
+        $map['user_id'] = $request->uid;
+        $map['total_price'] = $request->total_price;
+        $map['products'] = $request ->products;
+        $map['address'] = $request->address;
+        $map['phone'] = $request->phone;
+        $map['name'] = $request->name;
+        $map['type_payment'] = "direct";
+        $map['status'] = 0;
+        $map['note'] = $request->note?? '';
+        $map['is_done'] = 0;
+        $map['created_at'] = Carbon::now()->setTimezone('Asia/Ho_Chi_Minh');
 
+        $ordersNum = Orders::insertGetId($map);
+        $orders = Orders::where('id', $ordersNum)->first();
 
-        $orders->save();
+        $this -> afterCheckout($ordersNum, $request->uid);
+
+        $orders->products = json_decode($orders->products);
+        foreach($orders->products as $product){
+            $product->product_id =(int) $product->product_id;
+        }
         return response()->json([
             'code'=> 200,
             'data' => $orders,
@@ -180,7 +189,7 @@ class PaymentController extends Controller
         }
 
         $successUrl = env('APP_URL') . '/api/success/' . $oderNum;
-        $cancelUrl = env('APP_URL') . '/api/cancel/'. -1 .'/3';
+        $cancelUrl = env('APP_URL') . '/api/cancelv2/'.  $oderNum .'/3';
         $CheckOutSession = Session::create([
             'payment_method_types' => ['card'],
              // tạo ra mảng line_items từ danh sách sản phẩm trong order
@@ -266,7 +275,6 @@ class PaymentController extends Controller
             $order->status = 1;
             $order->updated_at = Carbon::now()->setTimezone('Asia/Ho_Chi_Minh');
 
-            $cancelUrl = env('APP_URL') . '/api/cancel/'. $order_id . '/2';
 
             //kiểm tra sản phẩm còn đủ số lượng không ( tránh nhiều người đặt cùng lúc và thiếu sản phẩm)
 
@@ -284,10 +292,10 @@ class PaymentController extends Controller
                     $order ->is_done = 4;
                     $order->save();
                     $product->save();
-                    return response()->json([
-                        'code'=> 200,
-                        'data' => $cancelUrl,
-                    ]);
+                    // return response()->json([
+                    //     'code'=> 200,
+                    //     'data' => $cancelUrl,
+                    // ]);
                 }
                 $product->save();
             }
@@ -295,7 +303,7 @@ class PaymentController extends Controller
             $order ->products = json_encode($order->products);
             $order->save();
             // xoá sản phẩm sau khi thực hiện thanh toán thành công
-            $this -> afterCheckout($order, $user_id);
+
 
 
             // $map = [];
@@ -307,6 +315,8 @@ class PaymentController extends Controller
             // $order = Orders::where($whereMap)->update($map);
 
 
+            $this-> afterCheckout($order_id, $user_id);
+
 
             if(empty($order)){
                 Log::info('update order failed cmn :)) ');
@@ -314,7 +324,7 @@ class PaymentController extends Controller
             Log::info('update order success');
             Log::info('end here.....');
         }
-       if($event->type=="charge.expired" || $event->type=="charge.failed"){
+       if($event->type=="charge.expired" || $event->type=="charge.failed" || $event->type ="checkout.session.expired"){
             $session = $event->data->object;
             $metadata = $session["metadata"];
             $order_id = $metadata->order_id;
@@ -338,14 +348,9 @@ class PaymentController extends Controller
                         $product->save();
                     }
                     //delete order
-                    $order->delete();
+                    // $order->delete();
                 }
-                else {
-                    return response()->json([
-                        'code'=> 400,
-                        'data' => 'order not found',
-                    ]);
-                }
+
 
 
             Log::info('end here.....');
@@ -384,38 +389,51 @@ class PaymentController extends Controller
 
 
     // xoá sản phẩm sau khi thực hiện thanh toán thành công
-    private function afterCheckout($order, $user_id){
-        // $products = json_decode($request->products);
-        // $products = [
-        // ['product_id' => 82, 'quantity' => 2],
-        //     ['product_id' => 82, 'quantity' => 1],
-        //   ];
+    private function afterCheckout( $order_id , $user_id){
+        $order = Orders::where('id', $order_id)->first();
         $products = json_decode($order->products, true);
+
         $cart = DB::table('carts')->where('uid', $user_id)->first();
 
-        $prod = json_decode($cart->products,true);
+        $prod = json_decode($cart->products);
+        $prodOnCart = json_decode($prod,true);
+
         // kiểm tra từng sản phẩm đã hoàn thành thanh toán
         foreach($products as $key => $productdone){
             //kiểm tra từng sản phẩm trong giỏ hàng
-            if (is_array($prod) && isset($prod['items'])) {
-                foreach ($prod['items'] as $key => $item) {
+            $product_id = $productdone['product_id'];
+                foreach ($prodOnCart['items'] as $key => $item) {
                     //nếu có sản phẩm đã hoàn thành thanh toán trong giỏ hàng
-                    if ($item['product_id'] == $productdone['product_id']) {
+                    if ($item['id'] == $product_id) {
+                        $product = DB::table('products')->where('id', $product_id)->first();
+                        $promotion = Promotions::where("id",$product->promotion_id)->first();
+                        if(empty($promotion)){
+                            $promotion = 0.0;
+                        }
+                        else{
+                            if(time() > strtotime($promotion->start_date) && time() < strtotime($promotion->end_date)){
+                                $promotion = $promotion->discount;
+                            }
+                            else {
+                                $promotion = 0.0;
+                            }
+                        }
+
                         //cập nhật lại tổng số lượng sản phẩm trong giỏ hàng
-                        $prod['totalItems'] -= $item['quantity'];
+                        $prodOnCart['totalItems'] -= $item['quantity'];
                         //cập nhật lại tổng tiền
-                        $prod['total'] -= $item['discountPrice'] * $item['quantity'];
+                        $prodOnCart['total'] -= $promotion * $item['quantity'];
                         // xoá sản phẩm trong cart
-                        array_splice($prod['items'], $key, 1);
-                        $cart->products = json_encode($prod);
-                        $cart->save();
-                        return response()->json([
-                            'message' => 'Sản phẩm đã được xóa khỏi giỏ hàng thành công',
-                            'cart' => $cart
-                        ], 200);
+                        array_splice($prodOnCart['items'], $key, 1);
+                        $cart->products = json_encode($prodOnCart);
+                        $cart = DB::table('carts')->where('uid', $user_id)->update([
+                            'products' => json_encode($cart->products),
+                        ]);
                     }
+
                 }
-            }
         }
+        // $cart -> products = json_decode(json_decode($cart->products));
+        // return $cart;
     }
 }
