@@ -6,10 +6,12 @@ use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\Api\PromotionsController;
 use App\Http\Controllers\Api\CategoriesController;
 use App\Http\Controllers\api\ChatboxController;
+use App\Http\Controllers\api\ChatController;
 use App\Http\Controllers\testController;
 use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\Api\CommentsController;
 use App\Http\Controllers\Api\ColorsController;
+use App\Http\Controllers\api\MessengerController;
 use App\Http\Controllers\Api\OrdersController;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\Api\RefundRequestController;
@@ -114,6 +116,15 @@ Route::group(['middleware'=> 'checkAdminLogin' ],function () {
     });
 
     Route::get('/generate-pdf', [PdfController::class, 'generatePDF'])-> name('generate-pdf');
+
+    Route::group(['prefix'=> '/messenger'], function(){
+        Route::get('/index', [MessengerController::class, 'index'])->name('messenger.index');
+        Route::get('/search', [MessengerController::class, 'search'])->name('messenger.search');
+        Route::get('/detail', [MessengerController::class, 'detail'])->name('messenger.detail');
+        Route::get('/delete', [MessengerController::class, 'delete'])->name('messenger.delete');
+    });
+    Route::get('/chatroom', [ChatController::class, 'index'])-> name('chatroom.index');
+    Route::any('/chatroom/store',[ChatController::class, 'store'])-> name('chatroom.store');
 });
 
 Route::get('/test', [PdfController::class, 'index']);

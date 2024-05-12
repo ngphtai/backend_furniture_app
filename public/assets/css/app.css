@@ -1195,7 +1195,7 @@ a {
 
 .chat-list {
 	position: relative;
-	height: 300px
+
 }
 
 .chat-list .list-group-item {
@@ -2665,3 +2665,6 @@ input.search-control-2::placeholder {
 
     }
 
+.pin-icon{
+    position: absolute; top: -20px; right: 100%; background-color: #f2f2f2; color: #333; padding: 5px; border-radius: 5px; display: none; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}

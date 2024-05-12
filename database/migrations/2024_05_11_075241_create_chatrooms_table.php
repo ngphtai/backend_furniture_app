@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('messengers', function (Blueprint $table) {
-            $table->id();
+        Schema::create('chatrooms', function (Blueprint $table) {
+            $table->string('uid')->unique()->primary();
+            $table->string('pin');
             $table->timestamps();
         });
     }
@@ -22,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('messengers');
+        Schema::dropIfExists('chatrooms');
     }
 };

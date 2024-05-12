@@ -8,13 +8,18 @@ use App\Http\Controllers\Api\PromotionsController;
 use App\Http\Controllers\Api\ProductsController;
 use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\api\ChatController;
 use App\Http\Controllers\Api\CommentsController;
 use App\Http\Controllers\Api\NotificationsController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\VnpayController;
 use App\Http\Controllers\Api\InforUsersController;
+use App\Http\Controllers\api\MessengerController;
 use App\Http\Controllers\Api\OrdersController;
 use App\Http\Controllers\Api\RefundRequestController;
+use App\Models\ChatRooms;
+use FontLib\Table\Type\name;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -95,6 +100,18 @@ Route::any('/cancelv2/{id}/{error}',[OrdersController::class, 'cancelv2']);
 
 Route::any('/orders/cancel', [RefundRequestController::class, 'cancelOrder']);
 // Route::any('/searchRequest', [RefundRequestController::class, 'search']);
+
+
+//rooms
+Route::any('/chatroom',[ChatController::class, 'index']); // get all chat rooms (FOR ADMIN)
+Route::any('/chatroom/store',[ChatController::class, 'store']); //store chat room for user (FOR USER)
+Route::any('/chatroom/show/{id}',[ChatController::class, 'show']); //get single chat room (FOR USER)
+
+//message
+Route::any('/message/show',[MessengerController::class, 'index']);
+Route::any('/message/store',[MessengerController::class, 'store']);
+Route::any('/message/storeByAdmin',[MessengerController::class, 'storeWithAdmin']);
+
 
 
 //test

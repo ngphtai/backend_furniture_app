@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Models\Messengers;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -18,7 +19,7 @@ class NewMessageSent implements ShouldBroadcastNow
     /**
      * Create a new event instance.
      */
-    public function __construct(private string $message)
+    public function __construct(private Messengers $message)
     {
         //
     }
@@ -28,10 +29,22 @@ class NewMessageSent implements ShouldBroadcastNow
      *
      * @return array<int, \Illuminate\Broadcasting\Channel>
      */
-    public function broadcastOn(): array
+    public function broadcastOn()
+    {
+        return new Channel('chat-room.1'.$this->message->room_id);
+    }
+
+
+    public function broadcastAs():String // Broadcast event name
+    {
+        return 'message.sent';
+    }
+
+    public function broadcastWith() : array // Data to broadcast
     {
         return [
-            new PrivateChannel('channel-name'),
+            'room_id' => $this->message->room_id,
+            'message' => $this->message->toArray(),
         ];
     }
 }

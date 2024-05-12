@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\ChatRooms;;
 class Users extends Authenticatable
 {
     use HasFactory;
@@ -23,5 +25,9 @@ class Users extends Authenticatable
     protected $casts = [
         'adress' => 'object',
     ];
+    public function chats() :HasMany
+    {
+        return $this->hasMany(ChatRooms::class, 'room_id', 'pin');
+    }
 
 }

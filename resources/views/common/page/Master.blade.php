@@ -169,7 +169,6 @@
 	<!--Morris JavaScript -->
 	<script src="/assets/plugins/raphael/raphael-min.js"></script>
 	<script src="/assets/plugins/morris/js/morris.js"></script>
-	<script src="/assets/js/index2.js"></script>
 	<!--app JS-->
 	<script src="/assets/js/app.js"></script>
 </body>
