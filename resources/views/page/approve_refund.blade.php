@@ -144,8 +144,9 @@
                                                             <tr>
                                                                 <th>STT</th>
                                                                 <th>Tên sản phẩm</th>
-                                                                <th>Số lượng</th>
                                                                 <th>Đơn giá</th>
+                                                                <th>Khuyến mãi</th>
+                                                                <th>Số lượng</th>
                                                                 <th>Thành tiền</th>
                                                             </tr>
                                                         </thead>
@@ -309,24 +310,29 @@
                                     for (var i = 0; i < products.length; i++) {
                                         var name = null;
                                         var price = null;
+                                        console.log(id);
                                         $.ajax({
                                             url: '{{route('product.detail1')}}',
                                             type: "GET",
-                                            data: {id: products[i].product_id},
+                                            data: {id: products[i].product_id,
+                                                    order_id: id
+                                            },
                                             async: false, // giúp chờ ajax chạy xong mới chạy tiếp đoạn code tiếp theo (đồng bộ)
                                             success: function(data){
                                                 name = data.product_name;
                                                 price = data.price;
+                                                promotion = data.promotion_id;
                                                 list_products += `<tr>
                                                                     <td>${stt++}</td>
                                                                     <td>${name}</td>
                                                                     <td>${price}</td>
+                                                                    <td>${promotion}</td>
                                                                     <td>${products[i].quantity}</td>
-                                                                    <td>${products[i].quantity * price}</td>
+                                                                    <td>${(products[i].quantity * price) - (products[i].quantity * price)*( promotion/100)}</td>
                                                                 </tr>`;
                                             },
-                                            orror: function(xhr, status, error) {
-                                                console.log("check" + xhr.responseText);
+                                            error: function(data) {
+                                                console.log("check: " + data);
                                             }
                                         });
                                     }

@@ -199,8 +199,9 @@
                                                             <tr>
                                                                 <th>STT</th>
                                                                 <th>Tên sản phẩm</th>
-                                                                <th>Số lượng</th>
                                                                 <th>Đơn giá</th>
+                                                                <th>Khuyến mãi</th>
+                                                                <th>Số lượng</th>
                                                                 <th>Thành tiền</th>
                                                             </tr>
                                                         </thead>
@@ -260,6 +261,7 @@
                                         <li><a class="badge rounded-0 text-white bg-secondary   p-2 text-uppercase px-3 dropdown-item" href="#" onclick="changeTrangthai2('Hoàn tiền')">Hoàn tiền</a></li>
                                         <li><a class="badge rounded-0 text-white bg-dark  p-2 text-uppercase px-3 dropdown-item" href="#" onclick="changeTrangthai2('Từ chối')">Từ chối</a></li>
                                     </ul>
+
                             </div>
                             <button type="submit" id = "updateIsDone"   class="btn btn-success px-5 radius-30"  >Cập nhật</button>
                         </div>
@@ -361,27 +363,27 @@
         var filterButton = document.getElementById('status-navigation');
         filterButton.innerHTML = filterName3;
 
-        filterButton.classList.remove('btn-outline-success', 'btn-outline-primary', 'btn-outline-danger', 'btn-outline-warning', 'btn-outline-info','btn-outline-secondary', 'btn-outline-dark');
+        filterButton.classList.remove('btn-success', 'btn-primary', 'btn-danger', 'btn-warning', 'btn-info','btn-secondary', 'btn-dark');
         if (filterName3 === 'Từ chối') {
-            filterButton.classList.add('btn-outline-dark');
+            filterButton.classList.add('btn-dark');
         }
         if (filterName3 === 'Hoàn tiền') {
-            filterButton.classList.add('btn-outline-secondary');
+            filterButton.classList.add('btn-secondary');
         }
         if (filterName3 === 'Hoàn thành') {
-            filterButton.classList.add('btn-outline-success');
+            filterButton.classList.add('btn-success');
         }
         if (filterName3 === 'Đang giao') {
-            filterButton.classList.add('btn-outline-info');
+            filterButton.classList.add('btn-info');
         }
         if (filterName3 === 'Đã xác nhận') {
-            filterButton.classList.add('btn-outline-warning');
+            filterButton.classList.add('btn-warning');
         }
         if (filterName3 === 'Chưa xác nhận') {
-            filterButton.classList.add('btn-outline-danger');
+            filterButton.classList.add('btn-danger');
         }
         if (filterName3 === 'Trạng thái') {
-            filterButton.classList.add('btn-outline-primary');
+            filterButton.classList.add('btn-primary');
         }
     }
 </script>
@@ -518,7 +520,7 @@
 
     function addDetailBtnEvent(id) {
             event.preventDefault();
-            alert('check data');
+            // alert('check data');
             var id = id;
             // alert(id);
             // alert('check data');
@@ -577,26 +579,34 @@
                             var products = JSON.parse(data.products);
 
                             for (var i = 0; i < products.length; i++) {
-                                var name = null;
-                                var price = null;
-                                $.ajax({
-                                    url: '{{route('product.detail1')}}',
-                                    type: "GET",
-                                    data: {id: products[i].product_id},
-                                    async: false, // giúp chờ ajax chạy xong mới chạy tiếp đoạn code tiếp theo (đồng bộ)
-                                    success: function(data){
-                                        name = data.product_name;
-                                        price = data.price;
-                                        list_products += `<tr>
-                                                            <td>${stt++}</td>
-                                                            <td>${name}</td>
-                                                            <td>${price}</td>
-                                                            <td>${products[i].quantity}</td>
-                                                            <td>${products[i].quantity * price}</td>
-                                                        </tr>`;
+                                        var name = null;
+                                        var price = null;
+                                        console.log(id);
+                                        $.ajax({
+                                            url: '{{route('product.detail1')}}',
+                                            type: "GET",
+                                            data: {id: products[i].product_id,
+                                                    order_id: id
+                                            },
+                                            async: false, // giúp chờ ajax chạy xong mới chạy tiếp đoạn code tiếp theo (đồng bộ)
+                                            success: function(data){
+                                                name = data.product_name;
+                                                price = data.price;
+                                                promotion = data.promotion_id;
+                                                list_products += `<tr>
+                                                                    <td>${stt++}</td>
+                                                                    <td>${name}</td>
+                                                                    <td>${price}</td>
+                                                                    <td>${promotion}</td>
+                                                                    <td>${products[i].quantity}</td>
+                                                                    <td>${(products[i].quantity * price) - (products[i].quantity * price)*( promotion/100)}</td>
+                                                                </tr>`;
+                                            },
+                                            error: function(data) {
+                                                console.log("check: " + data);
+                                            }
+                                        });
                                     }
-                                });
-                            }
                             return list_products;
                     });
                 },//end success

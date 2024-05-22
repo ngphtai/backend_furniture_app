@@ -12,7 +12,7 @@ class PromotionsController extends Controller
 {
     public function index()
     {
-        $result['info'] = DB::table('promotions')->paginate(10);
+        $result['info'] = DB::table('promotions')->orderBy('created_at', 'desc')->paginate(10);
         return view('page.promotion', $result);
     }
     public function edit(Request $request)

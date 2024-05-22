@@ -37,29 +37,29 @@
                     <a href="/users/index" >
 						<div class="parent-icon"><i class="bx bx-user"></i>
 						</div>
-						<div class="menu-title">Users</div>
+						<div class="menu-title">Tài Khoản</div>
 					</a>
 
                     <a href="/products/index" >
 						<div class="parent-icon"><i class="bx bx-cart"></i>
 						</div>
-						<div class="menu-title">Products</div>
+						<div class="menu-title">Sản phẩm</div>
 					</a>
 
                     <a href="/promotions/index" >
 						<div class="parent-icon"><i class="bx bxs-discount"></i>
 						</div>
-						<div class="menu-title">Promotions</div>
+						<div class="menu-title">Khuyến Mãi</div>
 					</a>
                     <a href="/comments/index" >
                         <div class="parent-icon"><i class="bx bx-comment-check"></i>
                         </div>
-                        <div class="menu-title">Comment</div>
+                        <div class="menu-title">Đánh Giá</div>
                     </a>
                     <a href="/categories/index" >
 						<div class="parent-icon"><i class="bx bx-category"></i>
 						</div>
-						<div class="menu-title">Categories</div>
+						<div class="menu-title">Danh Mục</div>
 					</a>
                     {{-- <a href="/orders/index" >
 						<div class="parent-icon"><i class="bx bx-spreadsheet"></i>
@@ -92,7 +92,7 @@
                     <a href="/chatbox" >
 						<div class="parent-icon"><i class="bx bx-message-rounded"></i>
 						</div>
-						<div class="menu-title">Messenger</div>
+						<div class="menu-title">Chat</div>
 					</a>
 
 
@@ -123,12 +123,12 @@
 							</div>
 						</a>
 						<ul class="dropdown-menu dropdown-menu-end">
-							<li><a class="dropdown-item" href="{{route('admin.profile')}}"><i class="bx bx-user"></i><span>Profile</span></a>
+							<li><a class="dropdown-item" href="{{route('admin.profile')}}"><i class="bx bx-user"></i><span>Hồ sơ cá nhân</span></a>
 							</li>
 							<li>
 								<div class="dropdown-divider mb-0"></div>
 							</li>
-							<li><a class="dropdown-item" href="{{route('logout')}}"><i class='bx bx-log-out-circle'></i><span>Logout</span></a>
+							<li><a class="dropdown-item" href="{{route('logout')}}"><i class='bx bx-log-out-circle'></i><span>Đăng xuất</span></a>
 							</li>
 						</ul>
 					</div>

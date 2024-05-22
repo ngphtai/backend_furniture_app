@@ -8,17 +8,19 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\OneSignal\OneSignalChannel;
 use NotificationChannels\OneSignal\OneSignalMessage;
+use Illuminate\Support\Facades\Log;
 
 class MessageSent extends Notification
 {
-    use Queueable;
 
+    private array $data;
+    use Queueable;
     /**
      * Create a new notification instance.
      */
-    public function __construct(private array $data)
+    public function __construct(array $data)
     {
-        //
+        $this->data = $data;
     }
 
     /**
@@ -31,12 +33,14 @@ class MessageSent extends Notification
         return [OneSignalChannel::class];
     }
 
-    // public function toOneSignal(){
-    //     $messageData = $this->data(['messageData']);
-    //     return OneSignalMessage::create()->setSubject( "Admin send you a messenger")
-    //                                     ->setBody($messageData['message'])
-    //                                     ->setData('data', $messageData);
-    // }
+    public function toOneSignal()
+    {
+        $messageData = $this->data['messageData'];
+        Log::debug("from Notification: " . $messageData['message']);
 
-
+        return OneSignalMessage::create()
+            ->setSubject("Supporter send you a messenger")
+            ->setBody($messageData['message'])
+            ->setData('data', $messageData);
+    }
 }

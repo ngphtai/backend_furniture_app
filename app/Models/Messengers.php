@@ -20,4 +20,5 @@ class Messengers extends Model
     {
         return $this->belongsTo(ChatRooms::class, 'room_id', 'uid');
     }
+
 }

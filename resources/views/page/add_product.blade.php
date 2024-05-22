@@ -40,11 +40,11 @@
                             <div class="border border-3 p-4 rounded">
                                 <div class="mb-3">
                                 <label for="product_name" class="form-label">Tên sản phẩm</label>
-                                <input type="text" name ="product_name" class="form-control" id="product_name" placeholder="Nhập tên sản phẩm (gồm Mã sản phẩm và tên sản phẩm)">
+                                <input type="text" name ="product_name" class="form-control" id="product_name" placeholder="Nhập tên sản phẩm (gồm Mã sản phẩm (#AB123) và tên sản phẩm)">
                                 </div>
                                 <div class="mb-3">
                                 <label for="description" class="form-label">Mô tả sản phẩm</label>
-                                <textarea class="form-control" name ="description" id="description" rows="3" placeholder="Chi tiết sản phẩm"></textarea>
+                                <textarea class="form-control" name ="description" id="description" rows="3" placeholder="Chi tiết sản phẩm" maxlength="700"></textarea>
                                 </div>
                                 <div class="mb-3">
                                     <label for="file" class="form-label">Ảnh sản phẩm</label>

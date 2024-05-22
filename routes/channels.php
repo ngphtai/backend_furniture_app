@@ -13,9 +13,9 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+Broadcast::channel('App.Models.User.{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId;
 });
-Broadcast::channel('public-chat', function () {
-    return true; // Cho phép tất cả người dùng truy cập kênh
-});
+Broadcast::channel('update-chat-room', '');
+Broadcast::channel('chat-room.1{roomId}', '');
+Broadcast::channel('update-order{orderId}', '');

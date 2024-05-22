@@ -16,7 +16,7 @@ class ChatRooms extends Model
     protected $table = 'chatrooms';
     protected $quarded = ['uid']; // không cho phép thay đổi giá trị của cột này
     protected $fillable = ['uid','pin'];
-
+    // protected $primaryKey = 'uid';
     // thiếu quan hệ khoá ngoại với bảng messengers nên k thể dùng function này
         public function messenger() : HasMany
         {
@@ -25,5 +25,9 @@ class ChatRooms extends Model
     public function  lastMessenger() : HasOne
     {
         return $this->hasOne(Messengers::class, 'room_id', 'uid')->latest();
+    }
+    public function pin()
+    {
+        return $this->belongsTo(InforUsers::class, 'pin', 'uid');
     }
 }

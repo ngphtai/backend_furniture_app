@@ -16,7 +16,7 @@
             <div class="card-body">
                 <div class="d-lg-flex align-items-center mb-4 gap-3">
                     <div class="position-relative">
-                        <input type="text" name="search" id="search" class="form-control ps-5 radius-30" placeholder="Tìm kiếm theo têna Khuyến Mãi" style="width: 600px;">
+                        <input type="text" name="search" id="search" class="form-control ps-5 radius-30" placeholder="Tìm kiếm theo tên Khuyến Mãi" style="width: 600px;">
                         <span class="position-absolute top-50 product-show translate-middle-y" ><i class="bx bx-search"></i></span>
                     </div>
                     {{-- button add ( cái hiển thị của nó là Add New promotion--}}

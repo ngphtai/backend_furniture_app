@@ -90,7 +90,7 @@
     <img class="success-image" src="/assets/images/order/success.gif" >
     <div>
 		<div class="lign-items-center">
-			<h1 class="mb-0 text-success" style ="font-weight: 600; padding-bottom: 20px">Đặt hàng thành công</h1>
+			<h1 class="mb-0 text-success" style ="font-weight: 600; padding-bottom: 20px">Order Success</h1>
             <h5 class="card-title text-Dark "  style ="font-weight: 600">ANNT Stone</h5>
             {{-- <h6 class="card-title text-success "  style ="font-weight: 600">Đã thanh toán thành công</h6> --}}
 		</div>
@@ -106,22 +106,22 @@
     <div style="border-top: 1px solid lightgray; margin-top: 4px; margin-bottom: 6px;"></div>
     <div class="card-body">
 	    <div class="container">
-			<strong class="text-Secondary mb-1"  style ="font-size: 18px;">Thông tin người đặt</strong>
+			<strong class="text-Secondary mb-1"  style ="font-size: 18px;">Ordering information</strong>
 		<div class="column column-cols-auto g-3">
 		    <div class="col">
-                <div style="display: inline-block;" class="text-secondary rounded">Họ và tên:</div>
+                <div style="display: inline-block;" class="text-secondary rounded">Name:</div>
                 <div style="display: inline-block;">{{$order -> name}}</div>
             </div>
 		    <div class="col">
-                <div style="display: inline-block;" class="text-secondary rounded">Số điện thoại:</div>
+                <div style="display: inline-block;" class="text-secondary rounded">Phone number:</div>
                 <div style="display: inline-block;">{{$order -> phone}}</div>
             </div>
 		    <div class="col">
-                <div style="display: inline-block;" class="text-secondary rounded">Gmail:</div>
+                <div style="display: inline-block;" class="text-secondary rounded">Email:</div>
                 <div style="display: inline-block;"><em>{{$email}}</em></div>
             </div>
 		    <div class="col">
-                <div style="display: inline-block;" class="text-secondary rounded">Địa chỉ giao hàng:</div>
+                <div style="display: inline-block;" class="text-secondary rounded">Address:</div>
                 <div style="display: inline-block;">{{$order -> address}}</div>
             </div>
 		</div>
@@ -133,7 +133,7 @@
 			<div class="card-body">
 				<div class="d-flex align-items-center">
 					<div>
-						<h5 class="mb-0">Tổng hóa đơn</h5>
+						<h5 class="mb-0">Total</h5>
 
 					</div>
 				<div class="ms-auto">	<h5 class="mb-0">{{$order -> total_price}} $</h5>
@@ -143,8 +143,8 @@
 			<div class="" id="w-chart6"></div>
 		</div>
 	</div>
-    <div class="col">
-		<button type="button" onclick="postMessage();" class="btn btn-lg btn-outline-info px-5" style="width: 300px;"><i class='bx bx-home mr-1'></i>Trở về trang chủ</button>
+    <div class="col my-3">
+		<button type="button" onclick="postMessage();" class="btn btn-lg btn-outline-info px-5" style="width: 250px;"><i class='bx bx-home mr-1'></i>Return to Home Page</button>
 	</div>
 
     <script type='text/javascript'>

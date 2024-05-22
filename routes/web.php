@@ -124,7 +124,11 @@ Route::group(['middleware'=> 'checkAdminLogin' ],function () {
         Route::get('/delete', [MessengerController::class, 'delete'])->name('messenger.delete');
     });
     Route::get('/chatroom', [ChatController::class, 'index'])-> name('chatroom.index');
-    Route::any('/chatroom/store',[ChatController::class, 'store'])-> name('chatroom.store');
+    Route::any('/chatroom/store',[ChatController::class, 'show'])-> name('chatroom.store');
+    Route::any('/chatroom/pin',[ChatController::class, 'setPin'])-> name('chatroom.setPin');
+    Route::any('/message/show',[MessengerController::class, 'index2']) -> name('showMessengerOnChatRoom');
+    Route::any('/message/storeByAdmin',[MessengerController::class, 'storeWithAdmin']) -> name('sendMessengerByAdmin');
+    Route::any('/message/readed',[MessengerController::class, 'isRead']) -> name('readed');
 });
 
 Route::get('/test', [PdfController::class, 'index']);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\UpdateNotification;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -10,7 +11,8 @@ use App\Models\Products;
 use App\Models\InforUsers;
 use App\Models\Refund_requests;
 use Stripe\Climate\Order;
-
+use App\Models\Notifications;
+use Illuminate\Support\Facades\Broadcast;
 
 class OrdersController extends Controller
 {
@@ -138,7 +140,16 @@ class OrdersController extends Controller
 
         $order = Orders::where('id', $request->id)->first();
         $user = auth()->guard('ANNTStore')->user();
+
         if ($request->is_done == 3 ) {
+            $notifi = new Notifications();
+            $notifi->user_id = $order->user_id;
+            $notifi->title = 'The orders has been completed';
+            $notifi->content = 'The orders #'. $order->id .' has been completed. Please check your orders and give us a feedback';
+            $notifi->is_read = 0;
+            $notifi->type = 1;
+            $notifi->save();
+            Broadcast(new UpdateNotification($notifi))->toOthers();
             $order->status = 1;
         }
         if ($order->is_done > $request->is_done) {
@@ -166,6 +177,16 @@ class OrdersController extends Controller
                 return response()->json(['message' => 'Update success'], 200);
             }
             $order->is_done = $request->is_done;
+             if($order->is_done == 2){
+                $notifi = new Notifications();
+                $notifi->user_id = $order->user_id;
+                $notifi->title = 'The orders has been delivered';
+                $notifi->content = 'The orders #'. $order->id .' has been delivered. Please check your orders and give us a feedback';
+                $notifi->is_read = 0;
+                $notifi->type = 1;
+                $notifi->save();
+                Broadcast(new UpdateNotification($notifi))->toOthers();
+            }
             $order->save();
             toastr()->success('Cập nhật thành công tình trạng sản phẩm');
             return response()->json(['message' => 'Update success'], 200);
@@ -269,6 +290,7 @@ class OrdersController extends Controller
 
 
     }
+    // aplly for order after checkout
     public function cancel(String $id,String $error){
         if($id != -1){
             $order = Orders::where('id', $id)->first();
@@ -276,13 +298,13 @@ class OrdersController extends Controller
                 $order->delete();
         }
         if($error == '1')
-            return view('page.order.order_failed', ['error' => 'Thanh toán thất bại']);
+            return view('page.order.order_failed', ['error' => 'Payment failed']);
         else if($error == '2')
-            return view('page.order.order_failed', ['error' => 'Sản phẩm đã hết hàng']);
+            return view('page.order.order_failed', ['error' => 'The product is out of stock']);
         else if($error == '3')
-            return view('page.order.order_failed', ['error' => 'Đã Huỷ thanh toán']);
+            return view('page.order.order_failed', ['error' => 'Payment canceled']);
         else
-            return view('page.order.order_failed', ['error' => 'Có lỗi xảy ra trong quá trình thanh toán']);
+            return view('page.order.order_failed', ['error' => 'An error occurred during the payment process']);
 
         return view('page.order.order_failed');
     }
@@ -292,6 +314,7 @@ class OrdersController extends Controller
             foreach(json_decode($order->products) as $item){
                 $product = Products::where('id', $item->product_id)->first();
                 $product->quantity += $item->quantity;
+                $product-> sold -= $item->quantity;
                 $product->save();
             }
 
@@ -299,13 +322,13 @@ class OrdersController extends Controller
         }
 
         if($error == '1')
-            return view('page.order.order_failed', ['error' => 'Thanh toán thất bại']);
+            return view('page.order.order_failed', ['error' => 'Payment failed']);
         else if($error == '2')
-            return view('page.order.order_failed', ['error' => 'Sản phẩm đã hết hàng']);
+            return view('page.order.order_failed', ['error' => 'The product is out of stock']);
         else if($error == '3')
-            return view('page.order.order_failed', ['error' => 'Đã Huỷ thanh toán']);
+            return view('page.order.order_failed', ['error' => 'Payment canceled']);
         else
-            return view('page.order.order_failed', ['error' => 'Có lỗi xảy ra trong quá trình thanh toán']);
+            return view('page.order.order_failed', ['error' => 'An error occurred during the payment process']);
 
         return view('page.order.order_failed');
     }

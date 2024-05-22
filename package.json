@@ -7,13 +7,14 @@
     },
     "devDependencies": {
         "axios": "^1.6.8",
+        "laravel-echo": "^1.16.1",
         "laravel-echo-server": "^1.6.3",
         "laravel-vite-plugin": "^1.0.2",
+        "pusher-js": "^8.4.0-rc2",
         "vite": "^5.2.11"
     },
     "dependencies": {
-        "debug": "^4.3.1",
-        "jquery": "^3.7.1",
-        "uuid": "^9.0.1"
+        "debug": "^4.3.4",
+        "jquery": "^3.7.1"
     }
 }

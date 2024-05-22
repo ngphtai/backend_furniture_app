@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Users;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
@@ -68,17 +69,43 @@ class UsersController extends Controller
 
     public function block(String $id){
         try{
+            $admin = auth()->guard('ANNTStore')->user()->user_type;
+
             $user = Users::where('id',$id)->first();
-            if($user -> is_lock == 0){
-                $user -> is_lock = 1;
-                $user -> save();
-                toastr()-> success("Khoá tài khoản thành công");
+            if(auth()->guard('ANNTStore')->user() == $user){
+                toastr()->error('Không thể khoá tài khoản của chính mình');
+                return redirect()->route('user.index');
+            }
+            if($user-> user_type == 'Admin' &&   $admin == 'Admin'){
+                if($user -> is_lock == 0){
+                    $user -> is_lock = 1;
+                    $user -> save();
+                    toastr()-> success("Khoá tài khoản thành công");
+                    return redirect()->route('user.index');
+                }else{
+                    $user -> is_lock = 0;
+                    $user -> save();
+                    toastr()-> success("Mở khoá tài khoản thành công");
+                    return redirect()->route('user.index');
+                }
+            }else if($user-> user_type == 'Admin'&& $admin == 'Staff'){
+                toastr()-> error("Tài khoản không có quyền thực hiện chức năng này!");
+                return redirect()->route('user.index');
+            }else if($user-> user_type == 'Staff'&& $admin == 'Staff'){
+                toastr()-> error("Tài khoản không có quyền thực hiện chức năng này!");
                 return redirect()->route('user.index');
             }else{
-                $user -> is_lock = 0;
-                $user -> save();
-                toastr()-> success("Mở khoá tài khoản thành công");
-                return redirect()->route('user.index');
+                if($user -> is_lock == 0){
+                    $user -> is_lock = 1;
+                    $user -> save();
+                    toastr()-> success("Khoá tài khoản thành công");
+                    return redirect()->route('user.index');
+                }else{
+                    $user -> is_lock = 0;
+                    $user -> save();
+                    toastr()-> success("Mở khoá tài khoản thành công");
+                    return redirect()->route('user.index');
+                }
             }
         }catch(\Exception $e){
             toastr()->error('Thao tác thất bại: ' . $e->getMessage());
@@ -215,7 +242,7 @@ class UsersController extends Controller
             $user->name = $request->name;
             $user->address = $request->address;
             $user->phone_number = $request->phone_number;
-            $user->email = $request->email;
+            // $user->email = $request->email;
             // $user->password = $request->password;
 
             if ($request->file != null) {

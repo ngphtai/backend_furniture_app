@@ -19,8 +19,12 @@ use function Laravel\Prompts\text;
 use Illuminate\Support\Facades\Log;
 use Psy\Readline\Hoa\Console;
 use App\Http\Controllers\api\VnpayController as Vnpay;
+use App\Models\Notifications;
 use Hamcrest\Arrays\IsArray;
 use Illuminate\Support\Facades\DB;
+use App\Events\UpdateNotification;
+use App\Models\Refund_requests;
+use Illuminate\Support\Facades\Broadcast;
 
 class PaymentController extends Controller
 {
@@ -34,16 +38,17 @@ class PaymentController extends Controller
             'address' => 'required',
             'note' => 'nullable',
             'uid' => 'required',
+            'total_price' => 'required',
         ]);
 
         $products = json_decode($request->products);
         foreach($products as $prorduct ){
             $product = Products::where('id', $prorduct->product_id)->first();
             if(empty($product)){
-                return response()->json(['data' => 'Product not found'], 200);
+                return response()->json(['message' => 'Product not found'], 200);
             }
             if($prorduct->quantity > $product->quantity){
-                return response()->json(['data' => 'Product not enough quantity'], 200);
+                return response()->json(['message' => 'Product not enough quantity'], 200);
             }
         }
           //trừ số lượng sp mới mua trong kho
@@ -81,6 +86,16 @@ class PaymentController extends Controller
 
         $this -> afterCheckout($ordersNum, $request->uid);
 
+        $notifi = new Notifications();
+        $notifi->user_id = $orders->user_id;
+        $notifi->title = "Order successfully paid";
+        $notifi->content = "Your order #".$orders->id ." has been successfully paid. Check your order status in Orders Management";
+        $notifi->is_read =0;
+        $notifi->type= 1;
+        $notifi->save();
+
+        $this -> PushNotifi($notifi);
+
         $orders->products = json_decode($orders->products);
         foreach($orders->products as $product){
             $product->product_id =(int) $product->product_id;
@@ -88,8 +103,13 @@ class PaymentController extends Controller
         return response()->json([
             'code'=> 200,
             'data' => $orders,
+            'message' => 'success',
         ]);
 
+    }
+
+    public function PushNotifi($notifi){
+        Broadcast(new UpdateNotification($notifi))->toOthers();
     }
 
 
@@ -274,87 +294,107 @@ class PaymentController extends Controller
             //update
             $order->status = 1;
             $order->updated_at = Carbon::now()->setTimezone('Asia/Ho_Chi_Minh');
-
+            $order->save();
 
             //kiểm tra sản phẩm còn đủ số lượng không ( tránh nhiều người đặt cùng lúc và thiếu sản phẩm)
 
-            $order->products = json_decode($order->products, true);
+            $productsOnOrder = json_decode($order->products, true);
 
-            foreach($order->products as $product){
+            foreach($productsOnOrder as $product){
                 $product_id = (int) $product['product_id'];
                 $quantity = $product['quantity'];
-
+                Log::info('product in order id is '.$product_id .' quantity is '.$quantity);
                 $product = Products::where('id', $product_id)->first();
 
                 $product->check_quantity -= $quantity;
                 if($product->check_quantity < 0){
+
                     $product->check_quantity = 0;
+                    $product->quantity = 0;
+                    $product -> sold -= $quantity;
                     $order ->is_done = 4;
                     $order->save();
                     $product->save();
-                    // return response()->json([
-                    //     'code'=> 200,
-                    //     'data' => $cancelUrl,
-                    // ]);
+                    Log::info('product id '.$product_id.' is out of stock'. 'quantity is '.$product->quantity);
+                    //TODO request refund for user
+                    $refund = new Refund_requests();
+                    $refund->order_id = $order->id;
+                    $refund->reason = "OUT OF STOCK !!!";
+                    $refund->status = 0;
+                    $refund->save();
+
+                    //TODO send notification event to pusher and send notification to onesingal services
+                    $notifi = new Notifications();
+                    $notifi->user_id = $order->user_id;
+                    $notifi->title = 'Order Failed';
+                    $notifi->content = 'Sorry, your order #'.$order->id.' has been failed because the product is out of stock. The amount paid will be refunded to you shortly. Please check your order and try again';
+                    $notifi->is_read = 0;
+                    $notifi->type = 1;
+                    $notifi->save();
+                    Broadcast( new UpdateNotification($notifi))->toOthers();
+
                 }
                 $product->save();
             }
 
-            $order ->products = json_encode($order->products);
-            $order->save();
-            // xoá sản phẩm sau khi thực hiện thanh toán thành công
 
-
-
-            // $map = [];
-            // $map['status'] = 1;
-            // $map['updated_at'] = Carbon::now();
-            // $whereMap = [];
-            // $whereMap['id'] = $order_id;
-            // $whereMap['user_id'] = $user_id;
-            // $order = Orders::where($whereMap)->update($map);
-
+            // xoá sản phẩm trong cart sau khi thực hiện thanh toán thành công
 
             $this-> afterCheckout($order_id, $user_id);
 
+            //TODO notification success
+            $notifi = new Notifications();
+            $notifi->user_id = $user_id;
+            $notifi->title = "Order successfully paid";
+            $notifi->content = "Your order #".$order_id ." has been successfully paid. Check your order status in Orders Management";
+            $notifi->is_read =0;
+            $notifi->type= 1;
+            $notifi->save();
+            Broadcast(new UpdateNotification($notifi))->toOthers();
 
             if(empty($order)){
                 Log::info('update order failed cmn :)) ');
             }
             Log::info('update order success');
             Log::info('end here.....');
+            http_response_code(200);
         }
-       if($event->type=="charge.expired" || $event->type=="charge.failed" || $event->type ="checkout.session.expired"){
-            $session = $event->data->object;
-            $metadata = $session["metadata"];
-            $order_id = $metadata->order_id;
-            $user_id = $metadata->user_id;
-            Log::info('order id is '.$order_id .' user id is '.$user_id);
-            //find
-            $map=[];
-            $map['id'] = $order_id;
-            $map['user_id'] = $user_id;
-            $order = Orders::where($map)->first();
-                if($order)
-                {
-                    $order->products = json_decode($order->products, true);
-                    foreach($order->products as $product){
-                        $product_id = (int) $product['product_id'];
-                        $quantity = $product['quantity'];
+        // catch session expired
+        // if( $event->type ="checkout.session.expired"){
+        //     Log::info('Payment failed !!!!!!!!!   start here.....');
+        //     $session = $event->data->object;
+        //     $metadata = $session["metadata"];
+        //     $order_id = $metadata->order_id;
+        //     $user_id = $metadata->user_id;
+        //     Log::info('order id is '.$order_id .' user id is '.$user_id);
+        //     //find
+        //     $map=[];
+        //     $map['id'] = $order_id;
+        //     // $map['user_id'] = $user_id;
+        //     $order = Orders::where($map)->first();
+        //     if($order)
+        //     {
+        //             $order->products = json_decode($order->products, true);
+        //             foreach($order->products as $product){
+        //                 $product_id = (int) $product['product_id'];
+        //                 $quantity = $product['quantity'];
+        //                 Log::info(('Failed: Quantity product is '.$quantity));
+        //                 $product = Products::where('id', $product_id)->first();
+        //                 Log::info(('Failed: After Sold product is '.$product->sold));
+        //                 $product->quantity += $quantity;
+        //                 $product -> sold -= $quantity;
+        //                 $product->save();
+        //                 Log::info(('Failed: Before Sold product is '.$product->sold));
+        //             }
+        //             //delete order
+        //             // $order->delete();
+        //     }else {
+        //         Log::info('Order not found');
+        //     }
 
-                        $product = Products::where('id', $product_id)->first();
-
-                        $product->quantity += $quantity;
-                        $product->save();
-                    }
-                    //delete order
-                    // $order->delete();
-                }
-
-
-
-            Log::info('end here.....');
-        }
+        //     Log::info('Payment failed !!!!!!!!!   end here.....');
+        //     http_response_code(200);
+        // }
 
         http_response_code(200);
     }
@@ -418,10 +458,7 @@ class PaymentController extends Controller
                                 $promotion = 0.0;
                             }
                         }
-
-                        //cập nhật lại tổng số lượng sản phẩm trong giỏ hàng
                         $prodOnCart['totalItems'] -= $item['quantity'];
-                        //cập nhật lại tổng tiền
                         $prodOnCart['total'] -= $promotion * $item['quantity'];
                         // xoá sản phẩm trong cart
                         array_splice($prodOnCart['items'], $key, 1);

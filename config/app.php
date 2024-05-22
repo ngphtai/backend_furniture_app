@@ -1,5 +1,6 @@
 <?php
 
+use Flasher\Prime\Notification\Notification;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
 
@@ -165,10 +166,11 @@ return [
          */
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
+        App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Barryvdh\DomPDF\ServiceProvider::class,
+        NotificationChannels\OneSignal\OneSignalServiceProvider::class,
     ])->toArray(),
 
     /*

@@ -101,7 +101,12 @@ class HomePageController extends Controller
         if($user->user_type =="User"){
             toastr()->error("Tài khoản không đúng loại!");
                 return redirect('/');
-        }else{
+        }
+        if($user->is_lock == 1){
+            toastr()->error("Tài khoản đã bị khóa!");
+            return redirect('/');
+        }
+        else{
             $check =  Auth::guard('ANNTStore')->attempt(['email'  => $request->email, 'password' => $request->password]) ;
             if($check) {
 

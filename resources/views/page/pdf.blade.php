@@ -87,6 +87,7 @@
                                         <th>STT.</th>
                                         <th class="pl0 text-start">Tên sản phẩm</th>
                                         <th class="text-center">Giá </th>
+                                        <th class="text-center">Giảm giá </th>
                                         <th class="text-center">Số Lượng</th>
                                         <th class="text-end">Tổng Tiền</th>
                                     </tr>
@@ -100,22 +101,28 @@
                                         <td></td>
                                         <td></td>
                                         <td></td>
+                                        <td></td>
                                         <td class="text-center">Giá tạm tính</td>
-                                        <td class="text-end">{{$orders->total_price}}</td>
+                                        <td class="text-end" id = "totalPrice">{{$orders->total_price}}</td>
                                     </tr>
                                     <tr class="tr2">
+                                        <td></td>
                                         <td></td>
                                         <td></td>
                                         <td></td>
                                         <td class="text-center">Phí vận chuyển</td>
-                                        <td class="text-end">{{30000}}</td>
+                                        <td class="text-end">Miễn Phí</td>
                                     </tr>
                                     <tr class="tr2">
                                         <td></td>
                                         <td></td>
                                         <td></td>
+                                        <td></td>
                                         <td class="text-center f-w-600 active-color">Tổng tiền</td>
-                                        <td class="f-w-600 text-end active-color">{{$orders->total_price + 30000}}</td>
+                                        @php
+                                            $total = $orders->total_price;
+                                        @endphp
+                                        <td class="f-w-600 text-end active-color">{{$orders->total_price }}</td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -222,31 +229,38 @@
                             var list_products = null;
                             var stt =1;
 
-
                             //chuyển data.products từ dạng json sang dạng array
                             var products = JSON.parse(data.products);
 
                             for (var i = 0; i < products.length; i++) {
-                                var name = null;
-                                var price = null;
-                                $.ajax({
-                                    url: '{{route('product.detail1')}}',
-                                    type: "GET",
-                                    data: {id: products[i].product_id},
-                                    async: false, // giúp chờ ajax chạy xong mới chạy tiếp đoạn code tiếp theo (đồng bộ)
-                                    success: function(data){
-                                        name = data.product_name;
-                                        price = data.price;
-                                        list_products += `<tr>
-                                                            <td class="pl0 text-center">${stt++}</td>
-                                                            <td class="text-center">${name}</td>
-                                                            <td class="text-center">${price}</td>
-                                                            <td class="text-center">${products[i].quantity}</td>
-                                                            <td class="text-end">${products[i].quantity * price}</td>
-                                                        </tr>`;
+                                        var name = null;
+                                        var price = null;
+                                        console.log(id);
+                                        $.ajax({
+                                            url: '{{route('product.detail1')}}',
+                                            type: "GET",
+                                            data: {id: products[i].product_id,
+                                                    order_id: id
+                                            },
+                                            async: false, // giúp chờ ajax chạy xong mới chạy tiếp đoạn code tiếp theo (đồng bộ)
+                                            success: function(data){
+                                                name = data.product_name;
+                                                price = data.price;
+                                                promotion = data.promotion_id;
+                                                list_products += `<tr>
+                                                                    <td>${stt++}</td>
+                                                                    <td>${name}</td>
+                                                                    <td>${price}</td>
+                                                                    <td>${promotion}</td>
+                                                                    <td>${products[i].quantity}</td>
+                                                                    <td class="text-end">${(products[i].quantity * price) - (products[i].quantity * price)*( promotion/100)}</td>
+                                                                </tr>`;
+                                            },
+                                            error: function(data) {
+                                                console.log("check: " + data);
+                                            }
+                                        });
                                     }
-                                });
-                            }
 
                             return list_products;
                     });

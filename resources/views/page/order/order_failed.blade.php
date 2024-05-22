@@ -89,7 +89,7 @@
     <img class="success-image" src="/assets/images/order/oderfail.gif">
     <div>
 		<div class="lign-items-center">
-			<h1 class="mb-0 text-danger" style ="font-weight: 600">Đặt Hàng Thất Bại</h1>
+			<h1 class="mb-0 text-danger" style ="font-weight: 600">Order Failure</h1>
             <h5 class="card-title text-Dark "  style ="font-weight: 600; padding-top:10px">ANNT Stone</h5>
 		</div>
     </div>
@@ -104,11 +104,11 @@
     <div style="border-top: 1px solid lightgray; margin-top: 4px; margin-bottom: 6px;"></div>
     <div class="card-body">
 	    <div class="container">
-			<strong class="text-Secondary mb-1"  style ="font-size: 18px;">Nguyên Nhân: {{$error}}</strong>
+			<strong class="text-Secondary mb-1"  style ="font-size: 18px;">Reason: {{$error}}</strong>
 		<div class="column column-cols-auto g-3">
 
 		    <div class="col">
-                <div style="display: inline-block;" class="text-secondary rounded">Yêu cầu thực hiện lại giao dịch</div>
+                <div style="display: inline-block;" class="text-secondary rounded">Please try again</div>
             </div>
 		    <!-- <div class="col">
                 <div style="display: inline-block;" class="text-secondary rounded">Địa chỉ giao hàng:</div>
@@ -132,14 +132,14 @@
 			</div>
 			<div class="" id="w-chart6"></div>
 		</div>
-	</div> --><div style="height: 180px;"></div>
+	</div> --><div style="height: 150px;"></div>
     <div class="col my-3">
-		<button type="button"  onclick="postMessage();" class="btn btn-lg btn-outline-info px-5" style="width: 300px;"><i class='bx bx-home mr-1'></i>Trở về trang chủ</button>
+		<button type="button"  onclick="postMessage();" class="btn btn-lg btn-outline-info px-5" style="width: 250px;"><i class='bx bx-home mr-1'></i>Return to Home Page</button>
 	</div>
     <script type='text/javascript'>
         function postMessage(){
             Pay.postMessage('cancel');
         }
 
-        </script>
+    </script>
 </html>

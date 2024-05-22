@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Events\UpdateNotification;
 use App\Http\Controllers\Controller;
+use App\Models\Notifications;
 use Illuminate\Http\Request;
 use App\Models\Orders;
+use App\Models\Refund_requests;
 use Illuminate\Support\Facades\Redirect;
 use Carbon\Carbon;
 use App\Models\Products;
 use App\Models\Promotions;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\DB;
 class VnpayController extends Controller
 {
@@ -206,15 +210,45 @@ class VnpayController extends Controller
                 if($product->check_quantity < 0){
                     $cancelUrl = env('APP_URL') . '/api/cancel/'. 0 .'/2' ;// thông báo hết hàng
                     $product->check_quantity = 0;
+                    $product->quantity =0;
+                    $product->sold -= $quantity;
                     $order ->is_done = 4;
                     $order->save();
                     $product->save();
+
+                    //TODO request refund for user
+                    $refund = new Refund_requests();
+                    $refund->order_id = $order->id;
+                    $refund->reason = "OUT OF STOCK !!!";
+                    $refund->status = 0;
+                    $refund->save();
+
+                    //TODO notification stock out
+                    $notifi = new Notifications();
+                    $notifi->user_id = $order->user_id;
+                    $notifi->title = 'Order Failed';
+                    $notifi->content = 'Sorry, your order #'.$order->id.' has been failed because the product is out of stock. The amount paid will be refunded to you shortly. Please check your order and try again';
+                    $notifi->is_read =0;
+                    $notifi->type= 1;
+                    $notifi->save();
+                    Broadcast(new UpdateNotification($notifi))->toOthers();
+
                     return Redirect::to($cancelUrl); // thông báo hết hàng
                 }
                 $product->save();
             }
             $order->save();
             $this ->afterCheckout($vnp_TxnRef, $order->user_id);
+
+            //TODO notification success
+            $notifi = new Notifications();
+            $notifi->user_id = $order->user_id;
+            $notifi->title = "Order successfully paid";
+            $notifi->content = "Your order #".$vnp_TxnRef ." has been successfully paid. Check your order status in Orders Management";
+            $notifi->is_read =0;
+            $notifi->type= 1;
+            $notifi->save();
+            Broadcast(new UpdateNotification($notifi))->toOthers();
             return Redirect::to($successUrl);
         } else {
             $order = Orders::find($vnp_TxnRef);
@@ -225,7 +259,8 @@ class VnpayController extends Controller
                 $quantity = $product['quantity'];
                 $product = Products::where('id', $product_id)->first();
                 $product->quantity += $quantity;
-                 $product->save();
+                $product -> sold -= $quantity;
+                $product->save();
             }
             $order->delete();
 
@@ -233,23 +268,6 @@ class VnpayController extends Controller
         }
 
         return Redirect::to($successUrl);
-    }
-
-    public function totalPrice(){
-        $orders = Orders::all();
-        $total_price = 0;
-        foreach($orders as $item){
-            $total_price = 0;
-            $products = json_decode($item->products);
-            foreach($products as $product){
-                $product_id = $product->product_id;
-                $quantity = $product->quantity;
-                $product = Products::where('id', $product_id)->first();
-                $total_price += $product->price * $quantity;
-            }
-            $item->total_price = $total_price;
-        }
-        return $total_price;
     }
     private function afterCheckout( $order_id , $user_id){
         $order = Orders::where('id', $order_id)->first();
@@ -296,5 +314,24 @@ class VnpayController extends Controller
         }
         // $cart -> products = json_decode(json_decode($cart->products));
         // return $cart;
+    }
+
+
+    // test for total price order
+    public function totalPrice(){
+        $orders = Orders::all();
+        $total_price = 0;
+        foreach($orders as $item){
+            $total_price = 0;
+            $products = json_decode($item->products);
+            foreach($products as $product){
+                $product_id = $product->product_id;
+                $quantity = $product->quantity;
+                $product = Products::where('id', $product_id)->first();
+                $total_price += $product->price * $quantity;
+            }
+            $item->total_price = $total_price;
+        }
+        return $total_price;
     }
 }

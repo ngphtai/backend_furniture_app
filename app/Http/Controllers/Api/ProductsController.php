@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Promotions;
 use App\Models\Colors;
+use App\Models\Orders;
+use App\Models\Comments;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -23,8 +25,32 @@ class ProductsController extends Controller
         return view('page.product')-> with($result);
     }
     public function detail1(Request $request){
+
+        $request ->validate([
+            'id' => 'required|integer',
+            'order_id' => 'required'
+        ]);
+
+        $timeOrder = Orders::where('id', $request->order_id)->first()->created_at -> timestamp;
+
         $product = Products::where("id",$request ->id)->first();
+        $promotion = Promotions::where("id",$product->promotion_id)->first();
+
+
+        if(empty($promotion)){
+            $product-> promotion_id = 0;
+        }
+        else{
+         if( $timeOrder > strtotime($promotion->start_date) &&  $timeOrder < strtotime($promotion->end_date)){
+            $product-> promotion_id = $promotion->discount;
+         }
+         else {
+            $product-> promotion_id = 0;
+         }
+        }
+
         return response()->json( $product, 200);
+
     }
 
     // display product detail
@@ -145,6 +171,7 @@ class ProductsController extends Controller
             foreach ($images as $image) {
                 $storedImages[] = $image;
             }
+            $storedImages = array_filter($storedImages);
             $productData['product_image'] = json_encode($storedImages);
         }
 
@@ -423,6 +450,29 @@ class ProductsController extends Controller
 
     }
 
-
-
+    public function newProduct()
+    {
+        $products = Products::where('is_show', 1)->orderBy('created_at', 'desc')->take(5)->get();
+        foreach ($products as $product) {
+            $promotion = Promotions::where("id",$product->promotion_id)->first();
+                if(empty($promotion)){
+                    $product-> promotion_id = 0;
+                }
+                else{
+                    if(time() > strtotime($promotion->start_date) && time() < strtotime($promotion->end_date)){
+                        $product-> promotion_id = $promotion->discount;
+                    }
+                    else {
+                        $product-> promotion_id = 0;
+                    }
+                }
+            //  lấy màu của sản phẩm và đưa vào biến color_name
+            $color_id = mb_substr($product->product_name, 5, 1);
+            $color = Colors::where('id',$color_id)->first();
+            $color = $color->color_name;
+            $product-> color_name = $color;
+            $product->product_image = json_decode($product->product_image);
+        }
+        return response()-> json(['data' => $products],200);
+    }
 }

@@ -6,6 +6,7 @@
     $product = App\Models\Products::with('promotion', 'category','color')->find($info );
     $images = json_decode($product->product_image, true);
     $comments = App\Models\Comments::with('user')->where('product_id', $info)->get();
+    $totalComment = App\Models\Comments::where('product_id', $info)->count();
     use App\Models\Categories;
     use App\Models\Promotions;
     ?>
@@ -62,8 +63,8 @@
                         </span>
                         @endforeach
                         </div>
-                        <div style="margin-top:5px">Số đánh giá </div>
-                        <div class="text-success " style="margin-top:5px" ><i class='bx bxs-cart-alt align-middle'></i> Số lượng mua</div>
+                        <div style="margin-top:5px">Số đánh giá: {{$totalComment }}  </div>
+                        <div class="text-success " style="margin-top:5px" ><i class='bx bxs-cart-alt align-middle'></i> Số lượng mua: {{$product -> sold}}</div>
 
                         <?php
                             use App\Models\Colors;
@@ -252,7 +253,6 @@
 
 
 <script>
-
 
     $(document).ready(function() {
         $('#button-plus').click(function() {

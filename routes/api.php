@@ -45,6 +45,8 @@ Route::post('/promotions/all', [PromotionsController::class, 'showAll']); // k c
 Route::post('/products/all', [ProductsController::class, 'all']);
 Route::post('/products/show', [ProductsController::class, 'show']); // detail product
 Route::post('/products/search', [ProductsController::class, 'search']);
+Route::any('/products/newproduct', [ProductsController::class, 'newProduct']);
+
 
 //user
 Route::any('/users/update_avatar', [InforUsersController::class, 'update_avatar']);
@@ -71,8 +73,8 @@ Route::post('/comments/delete', [CommentsController::class, 'delete']);
 
 //Notification
 Route::post('/notifications/create', [NotificationsController::class, 'create']);
-Route::post('/notifications/show/', [NotificationsController::class, 'show']);
-Route::post('/notifications/update/', [NotificationsController::class, 'update']);
+Route::any('/notifications/show', [NotificationsController::class, 'show']);
+Route::any('/notifications/update', [NotificationsController::class, 'update']);
 
 //Payment Stripe
 Route::Any('checkout', [PaymentController::class, 'checkout']);
@@ -108,10 +110,10 @@ Route::any('/chatroom/store',[ChatController::class, 'store']); //store chat roo
 Route::any('/chatroom/show/{id}',[ChatController::class, 'show']); //get single chat room (FOR USER)
 
 //message
-Route::any('/message/show',[MessengerController::class, 'index']);
+Route::any('/message/show',[MessengerController::class, 'index']) ; // get all message in chat room
 Route::any('/message/store',[MessengerController::class, 'store']);
 Route::any('/message/storeByAdmin',[MessengerController::class, 'storeWithAdmin']);
-
+Route::any('/chatroom/pin',[ChatController::class, 'setPin'])-> name('chatroom.setPin');
 
 
 //test

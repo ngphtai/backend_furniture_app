@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\InforUsers;
 use Illuminate\Support\Facades\Hash;
 
+
 class InforUsersController extends Controller
 {
     //API
@@ -15,10 +16,11 @@ class InforUsersController extends Controller
     {
         $existingUser = inforUsers::where('uid', $request->uid)->first();
         if ($existingUser) {
-            $user = InforUsers::where('uid', $request->uid)->first();
-            $user -> password = bcrypt($request->password);
-            $user -> save();
-            return response()->json(['message' => 'đăng nhập thành công với gg', 'user' => $existingUser], 200);
+            if($request-> password != null){
+                $existingUser->password = bcrypt($request->password);
+                $existingUser->save();
+            }
+            return response()->json(['message' => 'đăng nhập thành công với tài khoản', 'user' => $existingUser], 200);
         }
         try{
              $request->validate([
@@ -57,11 +59,11 @@ class InforUsersController extends Controller
             'uid' => 'required'
         ]);
         $user = inforUsers::where('uid', $request->uid)->first();
-        if($user->lock == 1){
-            return response()->json(['data' => 'User is locked'], 200);
+        if($user->is_lock == 1){
+            return response()->json(['message' => 'true'], 200);
         }else
         {
-            return response()->json(['data' => 'User is not locked'], 200);
+            return response()->json(['message' => 'false'], 200);
         }
 
     }
@@ -127,17 +129,16 @@ class InforUsersController extends Controller
     $user->address = $request->address ?? $user->address;
     $user->phone_number = $request->phone_number ?? $user->phone_number;
 
-    if ($request->password != null) {
-        if ($request->old_password != null) {
+    if ($request->password != null && $request->old_password != null) {
             if (Hash::check($request->old_password, $user->password)) {
-                // Old password verification failed
-                // $user->password_reset_required = true; // Set password reset flag
+
+                // $user->password = Hash::make($request->password);
                 // $user->save(); // Save the updated user with reset flag
+                return response()->json(['message' => 'Password updated successfully', 'user' => $user], 200);
             }else {
-                return response()->json(['message' => 'Old password is incorrect. Please reset your password.', 'user' => null], 200);
+                return response()->json(['message' => 'Old password is incorrect', 'user' => null], 200);
             }
-        }
-        $user->password = Hash::make($request->password);
+
     }
 
     $user->save();

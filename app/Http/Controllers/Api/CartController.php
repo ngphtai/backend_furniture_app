@@ -58,9 +58,20 @@ class CartController extends Controller
                     $prod->totalItems +=(int) $request->quantity;
                     $prod->total += $dicountPrice * $request->quantity;
                     $cart->products = json_encode($prod);
-                    $cart->save();
+
+
+                    //check quantity in product
+                    $product = DB::table('products')->where('id', $request->products_id)->first();
+                    if($product -> quantity < $prod->items[$key]->quantity){
+                        return response()->json([
+                            'message' => 'Added maximum quantity of product', //oke r á
+                        ], 200);
+                    }else {
+                        $cart->save();
+                    }
+
                     return response()->json([
-                        'message' => 'Sản phẩm đã được thêm vào giỏ hàng thành công',
+                        'message' => 'The product has been added to the cart successfully',
                         'Cart' => $cart
                     ], 200);
                 }
@@ -79,10 +90,17 @@ class CartController extends Controller
         $prod->totalItems +=(int) $request->quantity;
         $prod->total += $dicountPrice * $request->quantity;
         $cart->products = json_encode($prod);
-        $cart->save();
+        $product = DB::table('products')->where('id', $request->products_id)->first();
 
+        if($product -> quantity < $request->quantity){
+            return response()->json([
+                'message' => 'Added maximum quantity of product',
+            ], 200);
+        }else {
+            $cart->save();
+        }
         return response()->json([
-            'message' => 'Sản phẩm đã được thêm vào giỏ hàng thành công',
+            'message' => 'The product has been added to the cart successfully',
             'Cart' => $cart
         ], 200);
 
@@ -103,7 +121,7 @@ class CartController extends Controller
 
         $cart->save();
         return response()->json([
-            'message' => 'Sản phẩm đã được thêm vào giỏ hàng thành công',
+            'message' => 'The product has been added to the cart successfully',
         ], 200);
 
     }
@@ -111,7 +129,7 @@ class CartController extends Controller
     public function get(Request $request){
         $cart = Cart::where('uid', $request -> uid)->first();
         if(!$cart){
-            return response()->json(["Messenger" => "Chưa có sản phẩm"], 200);
+            return response()->json(["message" => "Chưa có sản phẩm"], 200);
         }
         $prod = json_decode($cart->products);
         foreach ($prod->items as $key => $item) {
@@ -179,13 +197,13 @@ class CartController extends Controller
                 $cart->products = json_encode($prod);
                 $cart->save();
                 return response()->json([
-                    'message' => 'Sản phẩm đã được xóa khỏi giỏ hàng thành công',
+                    'message' => 'The product has been deleted successfully',
                     'cart' => $cart
                 ], 200);
             }
         }
         return response()->json([
-            'message' => 'Xoá sản phẩm thất bại',
+            'message' => 'The product does not exist in the cart',
         ], 200);
 
     }
@@ -206,7 +224,7 @@ class CartController extends Controller
                     $product = DB::table('products')->where('id', $request->product_id)->first();
                     if($product -> quantity < $request->quantity){
                         return response()->json([
-                            'message' => 'false',
+                            'message' => 'Added maximum quantity of product',
                         ], 200);
                     }
                     $promotion = Promotions::where("id",$product->promotion_id)->first();
