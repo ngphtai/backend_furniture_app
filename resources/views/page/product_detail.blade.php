@@ -357,7 +357,7 @@
                     images = images.filter(function(img) {
                         return img !== imageUrl;
                     });
-                    alert("Xóa ảnh thành công" + images);
+                    // alert("Xóa ảnh thành công" + images);
                     // Cập nhật giao diện
                     updateImagesPreview(images);
                 }

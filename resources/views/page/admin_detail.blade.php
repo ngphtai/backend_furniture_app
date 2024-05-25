@@ -99,7 +99,7 @@
     $(document).ready(function(){
         $("#changePass").on('click',function(){
             $.ajaxSetup({ headers: { 'X-CSRF-TOKEN' : '{{ csrf_token() }}' } });
-            alert("changePass");
+            // alert("changePass");
             var oldPass = $("#oldPass").val();
             var newPass = $("#newPass").val();
             var repeatPass = $("#repeatPass").val();

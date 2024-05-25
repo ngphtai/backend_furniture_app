@@ -337,11 +337,6 @@ class PaymentController extends Controller
                 $product->save();
             }
 
-
-            // xoá sản phẩm trong cart sau khi thực hiện thanh toán thành công
-
-            $this-> afterCheckout($order_id, $user_id);
-
             //TODO notification success
             $notifi = new Notifications();
             $notifi->user_id = $user_id;
@@ -350,6 +345,10 @@ class PaymentController extends Controller
             $notifi->is_read =0;
             $notifi->type= 1;
             $notifi->save();
+
+            // xoá sản phẩm trong cart sau khi thực hiện thanh toán thành công
+            $this-> afterCheckout($order_id, $user_id);
+            
             Broadcast(new UpdateNotification($notifi))->toOthers();
 
             if(empty($order)){
